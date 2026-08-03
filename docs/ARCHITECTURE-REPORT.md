@@ -2,9 +2,26 @@
 
 **Date:** July 6, 2026  
 **Author:** Principal Software Architect  
-**Scope:** Reverse engineering of existing Sanity-based CMS → Design of custom CMS
+**Scope:** Reverse engineering of the former Sanity-based CMS → Design of the custom CMS
 
 ---
+
+> ## ⚠️ Historical Document
+>
+> This report was written **before** the migration, to justify and design the move off Sanity.
+> It is kept as a design/decision record — **it does not describe the current system.**
+>
+> Sanity has since been fully removed: no `sanity.config.ts`, no `/studio` route, no
+> `src/sanity/` or `src/lib/sanity/`, no `SANITY_*` environment variables, and no Sanity
+> packages in any `package.json`. The website now reads from the self-hosted Parto CMS
+> (NestJS + Prisma + PostgreSQL) in `parto-cms/`, via `src/lib/cms/data.ts`.
+>
+> **Every "Sanity" reference below refers to the retired system.** Part 1 is the
+> as-was analysis; Part 2 onward is the design that was implemented.
+> For current setup and usage, see [`README.md`](../README.md).
+
+---
+
 
 ## PART 1: REVERSE ENGINEERING — EXISTING CMS ANALYSIS
 
