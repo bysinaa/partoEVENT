@@ -1,0 +1,406 @@
+// Parto CMS Database Schema
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  SUPER_ADMIN
+  ADMIN
+  EDITOR
+  VIEWER
+}
+
+enum ContentStatus {
+  DRAFT
+  IN_REVIEW
+  PUBLISHED
+  ARCHIVED
+}
+
+enum MediaType {
+  IMAGE
+  VIDEO
+  DOCUMENT
+  AUDIO
+  OTHER
+}
+
+// ============================================
+// USERS
+// ============================================
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String
+  passwordHash String   @map("password_hash")
+  role         UserRole @default(EDITOR)
+  avatar       String?
+  isActive     Boolean  @default(true) @map("is_active")
+  lastLoginAt  DateTime? @map("last_login_at")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  projects     Project[]
+  refreshTokens RefreshToken[]
+
+  @@map("users")
+}
+
+// ============================================
+// MEDIA
+// ============================================
+
+model Media {
+  id           String    @id @default(cuid())
+  filename     String
+  originalName String    @map("original_name")
+  mimeType     String    @map("mime_type")
+  type         MediaType @default(OTHER)
+  size         Int
+  width        Int?
+  height       Int?
+  altText      String?   @map("alt_text")
+  altTextFa    String?   @map("alt_text_fa")
+  uploadedBy   String?   @map("uploaded_by")
+  createdAt    DateTime  @default(now()) @map("created_at")
+
+  teamMember TeamMember? @relation("TeamMemberPhoto")
+
+  @@map("media")
+}
+
+// ============================================
+// SERVICES
+// ============================================
+
+model Service {
+  id            String        @id @default(cuid())
+  slug          String        @unique
+  titleEn       String        @map("title_en")
+  titleFa       String?       @map("title_fa")
+  descriptionEn String?       @map("description_en")
+  descriptionFa String?       @map("description_fa")
+  iconId        String?       @map("icon_id")
+  coverImageId  String?       @map("cover_image_id")
+  order         Int           @default(0)
+  status        ContentStatus @default(DRAFT)
+  seoTitleEn    String?       @map("seo_title_en")
+  seoTitleFa    String?       @map("seo_title_fa")
+  seoDescEn     String?       @map("seo_desc_en")
+  seoDescFa     String?       @map("seo_desc_fa")
+  createdAt     DateTime      @default(now()) @map("created_at")
+  updatedAt     DateTime      @updatedAt @map("updated_at")
+
+  clientServices ClientService[]
+
+  @@map("services")
+}
+
+// ============================================
+// CLIENTS
+// ============================================
+
+model Client {
+  id            String        @id @default(cuid())
+  slug          String        @unique
+  name          String        // Persian name (primary)
+  englishName   String?       @map("english_name")
+  descriptionEn String?       @map("description_en")
+  descriptionFa String?       @map("description_fa")
+  logoId        String?       @map("logo_id")
+  coverImageId  String?       @map("cover_image_id")
+  website       String?
+  locationEn    String?       @map("location_en")
+  locationFa    String?       @map("location_fa")
+  featured      Boolean       @default(false)
+  displayOrder  Int           @default(0) @map("display_order")
+  status        ContentStatus @default(PUBLISHED)
+  seoTitleEn    String?       @map("seo_title_en")
+  seoTitleFa    String?       @map("seo_title_fa")
+  seoDescEn     String?       @map("seo_desc_en")
+  seoDescFa     String?       @map("seo_desc_fa")
+  createdAt     DateTime      @default(now()) @map("created_at")
+  updatedAt     DateTime      @updatedAt @map("updated_at")
+
+  clientServices ClientService[]
+  projectClients ProjectClient[]
+
+  @@map("clients")
+}
+
+model ClientService {
+  id        String  @id @default(cuid())
+  clientId  String  @map("client_id")
+  serviceId String  @map("service_id")
+
+  client  Client  @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  service Service @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+
+  @@unique([clientId, serviceId])
+  @@map("client_services")
+}
+
+// ============================================
+// PROJECTS
+// ============================================
+
+model Project {
+  id            String        @id @default(cuid())
+  slug          String        @unique
+  titleEn       String        @map("title_en")
+  titleFa       String?       @map("title_fa")
+  descriptionEn String?       @map("description_en")
+  descriptionFa String?       @map("description_fa")
+  thumbnailId   String?       @map("thumbnail_id")
+  coverImageId  String?       @map("cover_image_id")
+  isFeatured    Boolean       @default(false) @map("is_featured")
+  status        ContentStatus @default(DRAFT)
+  year          Int?
+  locationEn    String?       @map("location_en")
+  locationFa    String?       @map("location_fa")
+  clientNameEn  String?       @map("client_name_en")
+  clientNameFa  String?       @map("client_name_fa")
+  seoTitleEn    String?       @map("seo_title_en")
+  seoTitleFa    String?       @map("seo_title_fa")
+  seoDescEn     String?       @map("seo_desc_en")
+  seoDescFa     String?       @map("seo_desc_fa")
+  createdBy     String?       @map("created_by")
+  createdAt     DateTime      @default(now()) @map("created_at")
+  updatedAt     DateTime      @updatedAt @map("updated_at")
+
+  author User? @relation(fields: [createdBy], references: [id])
+  projectClients ProjectClient[]
+
+  @@map("projects")
+}
+
+model ProjectClient {
+  id        String  @id @default(cuid())
+  projectId String  @map("project_id")
+  clientId  String  @map("client_id")
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  client  Client  @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, clientId])
+  @@map("project_clients")
+}
+
+// ============================================
+// TEAM MEMBERS
+// ============================================
+
+model TeamMember {
+  id            String   @id @default(cuid())
+  nameEn        String   @map("name_en")
+  nameFa        String?  @map("name_fa")
+  positionEn    String?  @map("position_en")
+  positionFa    String?  @map("position_fa")
+  email         String?
+  phone         String?
+  biographyEn   String?  @map("biography_en")
+  biographyFa   String?  @map("biography_fa")
+  photoId       String?  @unique @map("photo_id")
+  instagram     String?
+  linkedin      String?
+  twitter       String?
+  order         Int      @default(0)
+  isActive      Boolean  @default(true) @map("is_active")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  photo Media? @relation("TeamMemberPhoto", fields: [photoId], references: [id])
+
+  @@map("team_members")
+}
+
+// ============================================
+// CATEGORIES
+// ============================================
+
+model Category {
+  id          String        @id @default(cuid())
+  slug        String        @unique
+  nameEn      String        @map("name_en")
+  nameFa      String?       @map("name_fa")
+  descriptionEn String?     @map("description_en")
+  descriptionFa String?     @map("description_fa")
+  type        String        @default("general") // general, project, blog, service
+  order       Int           @default(0)
+  status      ContentStatus @default(PUBLISHED)
+  createdAt   DateTime      @default(now()) @map("created_at")
+  updatedAt   DateTime      @updatedAt @map("updated_at")
+
+  posts Post[]
+
+  @@map("categories")
+}
+
+// ============================================
+// PAGES
+// ============================================
+
+model Page {
+  id            String        @id @default(cuid())
+  slug          String        @unique
+  titleEn       String        @map("title_en")
+  titleFa       String?       @map("title_fa")
+  contentEn     String?       @map("content_en")
+  contentFa     String?       @map("content_fa")
+  excerptEn     String?       @map("excerpt_en")
+  excerptFa     String?       @map("excerpt_fa")
+  coverImageId  String?       @map("cover_image_id")
+  status        ContentStatus @default(DRAFT)
+  seoTitleEn    String?       @map("seo_title_en")
+  seoTitleFa    String?       @map("seo_title_fa")
+  seoDescEn     String?       @map("seo_desc_en")
+  seoDescFa     String?       @map("seo_desc_fa")
+  createdAt     DateTime      @default(now()) @map("created_at")
+  updatedAt     DateTime      @updatedAt @map("updated_at")
+
+  @@map("pages")
+}
+
+// ============================================
+// BLOG POSTS
+// ============================================
+
+model Post {
+  id            String        @id @default(cuid())
+  slug          String        @unique
+  titleEn       String        @map("title_en")
+  titleFa       String?       @map("title_fa")
+  contentEn     String?       @map("content_en")
+  contentFa     String?       @map("content_fa")
+  excerptEn     String?       @map("excerpt_en")
+  excerptFa     String?       @map("excerpt_fa")
+  coverImageId  String?       @map("cover_image_id")
+  categoryId    String?       @map("category_id")
+  authorId      String?       @map("author_id")
+  status        ContentStatus @default(DRAFT)
+  publishedAt   DateTime?     @map("published_at")
+  seoTitleEn    String?       @map("seo_title_en")
+  seoTitleFa    String?       @map("seo_title_fa")
+  seoDescEn     String?       @map("seo_desc_en")
+  seoDescFa     String?       @map("seo_desc_fa")
+  tags          String?       // comma-separated tags
+  createdAt     DateTime      @default(now()) @map("created_at")
+  updatedAt     DateTime      @updatedAt @map("updated_at")
+
+  category Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+
+  @@map("posts")
+}
+
+// ============================================
+// MEDIA GALLERY ITEMS (images/ideos linked to entities)
+// ============================================
+
+model MediaItem {
+  id          String   @id @default(cuid())
+  mediaId     String   @map("media_id")
+  entityType  String   @map("entity_type")  // client, project, team, page, post
+  entityId    String   @map("entity_id")
+  type        String   @default("image") // image, video, thumbnail, cover, gallery
+  order       Int      @default(0)
+  captionEn   String?  @map("caption_en")
+  captionFa   String?  @map("caption_fa")
+  videoUrl    String?  @map("video_url")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@map("media_items")
+}
+
+// ============================================
+// SITE SETTINGS
+// ============================================
+
+model SiteSetting {
+  id    String @id @default(cuid())
+  key   String @unique
+  value String // JSON string for complex values
+  group String @default("general") // general, seo, social, appearance
+
+  @@map("site_settings")
+}
+
+// ============================================
+// MENUS
+// ============================================
+
+model Menu {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  nameEn      String   @map("name_en")
+  nameFa      String?  @map("name_fa")
+  location    String   // header, footer, sidebar
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  items MenuItem[]
+
+  @@map("menus")
+}
+
+model MenuItem {
+  id        String  @id @default(cuid())
+  menuId    String  @map("menu_id")
+  labelEn   String  @map("label_en")
+  labelFa   String? @map("label_fa")
+  url       String?
+  pageId    String? @map("page_id")
+  parentId  String? @map("parent_id")
+  order     Int     @default(0)
+  isActive  Boolean @default(true) @map("is_active")
+  target    String  @default("_self") // _self, _blank
+
+  menu   Menu     @relation(fields: [menuId], references: [id], onDelete: Cascade)
+  parent MenuItem? @relation("MenuItemChildren", fields: [parentId], references: [id])
+  children MenuItem[] @relation("MenuItemChildren")
+
+  @@map("menu_items")
+}
+
+// ============================================
+// REFRESH TOKENS
+// ============================================
+
+model RefreshToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String   @map("user_id")
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  revokedAt DateTime? @map("revoked_at")
+  ip        String?
+  userAgent String?  @map("user_agent")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("refresh_tokens")
+}
+
+// ============================================
+// ACTIVITY LOG
+// ============================================
+
+model ActivityLog {
+  id        String   @id @default(cuid())
+  userId    String?  @map("user_id")
+  action    String   // create, update, delete, login, logout
+  entityType String? @map("entity_type")
+  entityId  String?  @map("entity_id")
+  details   String?  // JSON string
+  ip        String?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("activity_logs")
+}

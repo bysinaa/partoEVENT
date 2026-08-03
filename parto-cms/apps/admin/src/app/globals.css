@@ -1,0 +1,116 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+@layer base {
+  :root {
+    --color-brand: 61 122 255;
+    --glass-bg: rgba(17, 17, 19, 0.8);
+    --glass-border: rgba(255, 255, 255, 0.08);
+  }
+
+  body {
+    @apply bg-surface-0 text-surface-800 antialiased;
+    font-feature-settings: 'cv11', 'ss01', 'cv01';
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Scrollbar styling */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-surface-400 rounded-full;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-surface-500;
+  }
+}
+
+@layer components {
+  /* ─── Glass Card ─────────────────────────── */
+  .glass {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    backdrop-filter: blur(12px);
+  }
+
+  /* ─── Button Variants ────────────────────── */
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-brand-500/50 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-primary {
+    @apply btn bg-brand-600 text-white hover:bg-brand-500 active:bg-brand-700;
+  }
+
+  .btn-secondary {
+    @apply btn bg-surface-200 text-surface-800 hover:bg-surface-300 active:bg-surface-100;
+  }
+
+  .btn-ghost {
+    @apply btn bg-transparent text-surface-700 hover:bg-surface-200 hover:text-surface-900;
+  }
+
+  .btn-danger {
+    @apply btn bg-red-600/10 text-red-400 hover:bg-red-600/20 active:bg-red-600/30;
+  }
+
+  /* ─── Input ──────────────────────────────── */
+  .input {
+    @apply w-full rounded-lg border border-surface-300 bg-surface-100 px-3 py-2 text-sm text-surface-800 placeholder-surface-500 transition-colors duration-200;
+    @apply focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500/30;
+  }
+
+  /* ─── Badge ──────────────────────────────── */
+  .badge {
+    @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium;
+  }
+
+  .badge-success {
+    @apply badge bg-emerald-500/10 text-emerald-400;
+  }
+
+  .badge-warning {
+    @apply badge bg-amber-500/10 text-amber-400;
+  }
+
+  .badge-error {
+    @apply badge bg-red-500/10 text-red-400;
+  }
+
+  .badge-info {
+    @apply badge bg-brand-500/10 text-brand-400;
+  }
+
+  /* ─── Card ───────────────────────────────── */
+  .card {
+    @apply rounded-xl border border-surface-300 bg-surface-50 p-6;
+  }
+
+  /* ─── Table ──────────────────────────────── */
+  .table-row {
+    @apply border-b border-surface-300 transition-colors hover:bg-surface-100;
+  }
+
+  /* ─── Skeleton Loader ────────────────────── */
+  .skeleton {
+    @apply animate-pulse rounded-lg bg-surface-200;
+  }
+}
+
+@layer utilities {
+  .text-gradient {
+    @apply bg-gradient-to-r from-brand-400 to-brand-600 bg-clip-text text-transparent;
+  }
+}
