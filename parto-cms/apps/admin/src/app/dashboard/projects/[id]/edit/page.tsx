@@ -1,52 +1,63 @@
 'use client';
 
-import EntityForm, { FormField } from '@/components/EntityForm';
+import EntityForm from '@/components/EntityForm';
 import { projectsApi } from '@/lib/api';
 import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { Loader2 } from 'lucide-react';
-
-const fields: FormField[] = [
-  { name: 'titleEn', label: 'Title (English)', type: 'text', required: true },
-  { name: 'titleFa', label: 'Title (Farsi)', type: 'text', required: true },
-  { name: 'slug', label: 'Slug', type: 'text' },
-  { name: 'descriptionEn', label: 'Description (English)', type: 'textarea', span: 'full' },
-  { name: 'descriptionFa', label: 'Description (Farsi)', type: 'textarea', span: 'full' },
-  { name: 'contentEn', label: 'Content (English)', type: 'richtext', span: 'full' },
-  { name: 'contentFa', label: 'Content (Farsi)', type: 'richtext', span: 'full' },
-  { name: 'featuredImage', label: 'Featured Image', type: 'image' },
-  { name: 'coverImage', label: 'Cover Image', type: 'image' },
-  { name: 'clientName', label: 'Client Name', type: 'text' },
-  { name: 'locationEn', label: 'Location (English)', type: 'text' },
-  { name: 'locationFa', label: 'Location (Farsi)', type: 'text' },
-  { name: 'year', label: 'Year', type: 'number' },
-  { name: 'servicesUsed', label: 'Services Used', type: 'multiselect', options: [
-    { label: 'Lighting', value: 'LIGHTING' }, { label: 'LED Display', value: 'LED_DISPLAY' },
-    { label: 'Projection', value: 'PROJECTION' }, { label: 'Audio', value: 'AUDIO' },
-    { label: 'Stage Design', value: 'STAGE_DESIGN' }, { label: 'Control Systems', value: 'CONTROL_SYSTEMS' },
-  ]},
-  { name: 'tags', label: 'Tags', type: 'multiselect', options: [
-    { label: 'Indoor', value: 'indoor' }, { label: 'Outdoor', value: 'outdoor' },
-    { label: 'Concert', value: 'concert' }, { label: 'Corporate', value: 'corporate' },
-  ]},
-  { name: 'status', label: 'Status', type: 'select', options: [
-    { label: 'Published', value: 'PUBLISHED' }, { label: 'Draft', value: 'DRAFT' },
-  ]},
-  { name: 'displayOrder', label: 'Display Order', type: 'number' },
-  { name: 'featured', label: 'Featured', type: 'toggle' },
-];
+import { Loader2, AlertCircle } from 'lucide-react';
+import { projectFields } from '../../fields';
 
 export default function EditProjectPage() {
   const params = useParams();
   const id = params.id as string;
   const [entity, setEntity] = useState<Record<string, unknown> | null>(null);
+  const [loadError, setLoadError] = useState('');
 
-  useEffect(() => { projectsApi.getById(id).then((r: { data: Record<string, unknown> }) => setEntity(r.data)); }, [id]);
+  useEffect(() => {
+    let active = true;
+    projectsApi
+      .getById(id)
+      .then((r: { data: Record<string, unknown> }) => {
+        if (active) setEntity(r.data);
+      })
+      .catch((err: unknown) => {
+        console.error('[projects.edit] failed to load', err);
+        const anyErr = err as { response?: { status?: number; data?: { message?: string } } };
+        if (active) {
+          setLoadError(
+            anyErr?.response?.status === 404
+              ? 'This project no longer exists.'
+              : anyErr?.response?.data?.message || 'Could not load this project.',
+          );
+        }
+      });
+    return () => {
+      active = false;
+    };
+  }, [id]);
 
-  if (!entity) return <div className="flex items-center justify-center h-64"><Loader2 className="w-6 h-6 animate-spin text-gray-400" /></div>;
+  if (loadError) {
+    return (
+      <div className="mx-auto mt-12 flex max-w-lg items-start gap-3 rounded-lg border border-red-200 bg-red-50 px-4 py-3 dark:border-red-900/50 dark:bg-red-950/40">
+        <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-red-600 dark:text-red-400" />
+        <div>
+          <p className="text-sm font-medium text-red-800 dark:text-red-300">Could not load project</p>
+          <p className="mt-0.5 text-sm text-red-700 dark:text-red-400">{loadError}</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!entity) {
+    return (
+      <div className="flex h-64 items-center justify-center">
+        <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
+      </div>
+    );
+  }
 
   return (
-    <EntityForm title="Edit Project" fields={fields} entity={entity} isNew={false} backUrl="/dashboard/projects"
+    <EntityForm title="Edit Project" fields={projectFields} entity={entity} isNew={false} backUrl="/dashboard/projects"
       onSubmit={async (data: Record<string, unknown>) => { await projectsApi.update(id, data); }} />
   );
 }

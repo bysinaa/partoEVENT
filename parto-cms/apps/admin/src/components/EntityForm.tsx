@@ -2,53 +2,109 @@
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Save, Loader2, Upload, X } from 'lucide-react';
+import { ArrowLeft, Save, Loader2, Upload, X, AlertCircle } from 'lucide-react';
+import { API_BASE, resolveMediaUrl, fetchMediaUrl, invalidateMediaUrl } from '@/lib/media';
 
-const RAW_API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3006';
-const API_URL = `${RAW_API_URL.replace(/\/+$/, '').replace(/\/api\/v1$/, '')}/api/v1`;
-const API_ORIGIN = API_URL.replace(/\/api\/v1$/, '');
-
-function resolveMediaUrl(value?: string | null) {
-  if (!value) return '';
-  if (value.startsWith('http://') || value.startsWith('https://')) return value;
-  if (value.startsWith('/api/v1/')) return `${API_ORIGIN}${value.replace(/^\/api\/v1/, '')}`;
-  if (value.startsWith('/')) return `${API_ORIGIN}${value}`;
-  return `${API_ORIGIN}/uploads/${value}`;
+/** Extract the most specific message the API gave us, rather than a generic string. */
+function extractApiError(err: unknown): string {
+  const anyErr = err as any;
+  const data = anyErr?.response?.data;
+  if (data) {
+    // Nest's ValidationPipe returns `message` as an array of constraint failures.
+    if (Array.isArray(data.message)) return data.message.join('; ');
+    if (typeof data.message === 'string') return data.message;
+    if (typeof data.error === 'string') return data.error;
+  }
+  if (anyErr?.message) return anyErr.message;
+  return 'Unexpected error';
 }
+
+/** Log full request context to the console; never log tokens. */
+function logApiError(scope: string, err: unknown) {
+  const anyErr = err as any;
+  const cfg = anyErr?.config;
+  console.error(`[${scope}] request failed`, {
+    method: cfg?.method?.toUpperCase(),
+    url: cfg?.baseURL ? `${cfg.baseURL}${cfg.url}` : cfg?.url,
+    status: anyErr?.response?.status,
+    statusText: anyErr?.response?.statusText,
+    body: anyErr?.response?.data,
+  });
+}
+
+const ACCEPTED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/svg+xml'];
 
 async function uploadFile(file: File): Promise<{ id: string; url: string }> {
   const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null;
   const formData = new FormData();
   formData.append('file', file);
-  const res = await fetch(`${API_URL}/media/upload`, {
+  const res = await fetch(`${API_BASE}/media/upload`, {
     method: 'POST',
     headers: token ? { Authorization: `Bearer ${token}` } : {},
     body: formData,
   });
-  if (!res.ok) throw new Error('Upload failed');
+
+  if (!res.ok) {
+    let detail = `${res.status} ${res.statusText}`;
+    try {
+      const body = await res.json();
+      if (Array.isArray(body.message)) detail = body.message.join('; ');
+      else if (body.message) detail = body.message;
+    } catch {
+      // Response body was not JSON — keep the status line.
+    }
+    console.error('[upload] failed', { url: `${API_BASE}/media/upload`, status: res.status, detail });
+    throw new Error(detail);
+  }
+
   const result = await res.json();
-  return { id: result.id, url: resolveMediaUrl(result.url || result.fileUrl || result.filename) };
+  return { id: result.id, url: resolveMediaUrl(result.url || result.path || result.filename) };
 }
 
-function ImageUpload({ value, onChange, label }: { value?: string; onChange: (v: string | null) => void; label: string }) {
+function ImageUpload({ value, onChange }: { value?: string; onChange: (v: string | null) => void }) {
   const fileRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const [preview, setPreview] = useState('');
+  const [error, setError] = useState('');
 
+  // `value` is normally a media id, which needs a lookup to become a URL.
   useEffect(() => {
-    setPreview(resolveMediaUrl(value));
+    let active = true;
+    if (!value) {
+      setPreview('');
+      return;
+    }
+    const direct = resolveMediaUrl(value);
+    if (direct) {
+      setPreview(direct);
+      return;
+    }
+    fetchMediaUrl(value).then((url) => {
+      if (active) setPreview(url);
+    });
+    return () => {
+      active = false;
+    };
   }, [value]);
 
   const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
+    setError('');
+    if (!ACCEPTED_IMAGE_TYPES.includes(file.type)) {
+      setError(`Unsupported file type "${file.type || 'unknown'}". Use JPG, PNG, WebP, GIF or SVG.`);
+      if (fileRef.current) fileRef.current.value = '';
+      return;
+    }
+
     setUploading(true);
     try {
       const result = await uploadFile(file);
       setPreview(result.url);
       onChange(result.id);
-    } catch {
-      alert('Upload failed');
+    } catch (err) {
+      setError(`Upload failed: ${err instanceof Error ? err.message : 'unknown error'}`);
     } finally {
       setUploading(false);
       if (fileRef.current) fileRef.current.value = '';
@@ -57,24 +113,32 @@ function ImageUpload({ value, onChange, label }: { value?: string; onChange: (v:
 
   return (
     <div>
-      <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleFile} />
+      <input ref={fileRef} type="file" accept={ACCEPTED_IMAGE_TYPES.join(',')} className="hidden" onChange={handleFile} />
       {preview ? (
+
         <div className="relative group w-full h-40 rounded-lg border border-gray-200 dark:border-zinc-700 overflow-hidden bg-gray-50 dark:bg-zinc-800">
           <img src={preview} alt="" className="w-full h-full object-cover" />
           <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
             <button type="button" onClick={() => fileRef.current?.click()} className="px-3 py-1 bg-white/90 rounded text-sm font-medium hover:bg-white">Replace</button>
-            <button type="button" onClick={() => { onChange(null); setPreview(''); }} className="px-3 py-1 bg-red-500 text-white rounded text-sm font-medium hover:bg-red-600"><X className="w-4 h-4" /></button>
+            <button type="button" onClick={() => { invalidateMediaUrl(value); onChange(null); setPreview(''); }} className="px-3 py-1 bg-red-500 text-white rounded text-sm font-medium hover:bg-red-600"><X className="w-4 h-4" /></button>
           </div>
         </div>
       ) : (
-        <button type="button" onClick={() => fileRef.current?.click()}
+        <button type="button" onClick={() => fileRef.current?.click()} disabled={uploading}
           className="w-full h-40 rounded-lg border-2 border-dashed border-gray-300 dark:border-zinc-600 hover:border-blue-400 dark:hover:border-blue-500 transition-colors flex flex-col items-center justify-center text-gray-400 dark:text-zinc-500 hover:text-blue-500 dark:hover:text-blue-400 bg-gray-50 dark:bg-zinc-800/50">
           {uploading ? <Loader2 className="w-8 h-8 animate-spin" /> : <><Upload className="w-8 h-8 mb-2" /><span className="text-sm">Click to upload</span></>}
         </button>
       )}
+      {error && (
+        <p className="mt-2 text-xs text-red-600 dark:text-red-400 flex items-start gap-1">
+          <AlertCircle className="w-3.5 h-3.5 mt-px shrink-0" />
+          <span>{error}</span>
+        </p>
+      )}
     </div>
   );
 }
+
 
 export interface FormField {
   name: string;
@@ -99,6 +163,9 @@ export default function EntityForm({ title, fields, entity, onSubmit, backUrl, i
   const router = useRouter();
   const [formData, setFormData] = useState<Record<string, any>>({});
   const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState('');
+  const savingRef = useRef(false);
+
 
   useEffect(() => {
     if (entity) {
@@ -132,19 +199,47 @@ export default function EntityForm({ title, fields, entity, onSubmit, backUrl, i
     setFormData(prev => ({ ...prev, [name]: value }));
   }, []);
 
+  /**
+   * Optional relation ids arrive from empty inputs as ''. Prisma treats '' as a
+   * real foreign key and the write fails, so normalise blanks to null.
+   */
+  const normalise = useCallback((data: Record<string, any>) => {
+    const out: Record<string, any> = {};
+    for (const field of fields) {
+      const value = data[field.name];
+      if (field.type === 'image') {
+        out[field.name] = value === '' || value === undefined ? null : value;
+      } else if (field.type === 'text' || field.type === 'textarea' || field.type === 'richtext') {
+        // Keep required fields as-is so the API reports the missing value.
+        out[field.name] = value === '' && !field.required ? null : value;
+      } else if (field.type === 'select') {
+        out[field.name] = value === '' ? undefined : value;
+      } else {
+        out[field.name] = value;
+      }
+    }
+    // Never send undefined keys — they only add noise to the request body.
+    return Object.fromEntries(Object.entries(out).filter(([, v]) => v !== undefined));
+  }, [fields]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (savingRef.current) return; // guard against double submit
+    savingRef.current = true;
     setSaving(true);
+    setSaveError('');
     try {
-      await onSubmit(formData);
+      await onSubmit(normalise(formData));
       router.push(backUrl);
     } catch (err) {
-      console.error('Save failed:', err);
-      alert('Failed to save. Please try again.');
+      logApiError('EntityForm.save', err);
+      setSaveError(extractApiError(err));
     } finally {
+      savingRef.current = false;
       setSaving(false);
     }
   };
+
 
   return (
     <div className="min-h-full bg-gray-50 dark:bg-zinc-950">
@@ -166,6 +261,17 @@ export default function EntityForm({ title, fields, entity, onSubmit, backUrl, i
 
       <form id="entity-form" onSubmit={handleSubmit} className="max-w-4xl mx-auto px-6 py-8">
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-8">{title}</h1>
+
+        {saveError && (
+          <div role="alert" className="mb-6 flex items-start gap-3 rounded-lg border border-red-200 bg-red-50 px-4 py-3 dark:border-red-900/50 dark:bg-red-950/40">
+            <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-red-600 dark:text-red-400" />
+            <div>
+              <p className="text-sm font-medium text-red-800 dark:text-red-300">Could not save</p>
+              <p className="mt-0.5 text-sm text-red-700 dark:text-red-400">{saveError}</p>
+            </div>
+          </div>
+        )}
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {fields.map((field) => (
             <div key={field.name} className={field.span === 'full' ? 'md:col-span-2' : ''}>
@@ -237,7 +343,8 @@ export default function EntityForm({ title, fields, entity, onSubmit, backUrl, i
               )}
 
               {field.type === 'image' && (
-                <ImageUpload value={formData[field.name]} onChange={(v) => handleChange(field.name, v)} label={field.label} />
+                <ImageUpload value={formData[field.name]} onChange={(v) => handleChange(field.name, v)} />
+
               )}
             </div>
           ))}
