@@ -12,6 +12,9 @@
     "lint": {
       "dependsOn": ["^build"]
     },
+    "db:push": {
+      "cache": false
+    },
     "db:migrate": {
       "cache": false
     },

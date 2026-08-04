@@ -33,16 +33,52 @@ The public website is a **read-only consumer** of the CMS public API. It never t
 
 ```bat
 cd parto-cms
-copy .env.example .env
+copy .env.example apps\api\.env
 npm install
 npm run docker:up
-npm run db:migrate
+npm run db:push
 npm run db:seed
 ```
 
-`docker:up` starts PostgreSQL, Redis and MinIO via `docker-compose.yml`. `db:seed` creates the default admin user defined by `DEFAULT_ADMIN_EMAIL` / `DEFAULT_ADMIN_PASSWORD` in `parto-cms/.env`.
+**Why `apps\api\.env` and not `parto-cms\.env`?** The API reads its environment from its
+own directory — `envFilePath: ['.env.local', '.env']` in `apps/api/src/app.module.ts`
+resolves relative to the API's working directory. A `.env` at the `parto-cms/` root is
+never loaded. Prisma also resolves `DATABASE_URL` from `apps/api` when the schema lives there.
+
+**Why `db:push` and not `db:migrate`?** This project has **no `prisma/migrations/` directory** —
+the schema is applied declaratively with `prisma db push`. Running `db:migrate` on a fresh
+clone would try to create an initial migration and prompt interactively. Use `db:push` for
+local setup; introduce `prisma migrate` properly before the first production deployment
+(see "Known gaps" below).
+
+`docker:up` starts PostgreSQL, Redis and MinIO via `docker-compose.yml`. Note the published
+ports are deliberately non-default to avoid clashing with local installs:
+
+| Service | Host port | Container port |
+|---|---|---|
+| PostgreSQL | `55432` | 5432 |
+| Redis | `6379` | 6379 |
+| MinIO (S3 API) | `9002` | 9000 |
+| MinIO (console) | `9003` | 9001 |
+
+`db:seed` creates the default admin user defined by `DEFAULT_ADMIN_EMAIL` /
+`DEFAULT_ADMIN_PASSWORD` in `apps/api/.env`. The seed is idempotent — re-running it
+updates the existing admin rather than failing.
+
+When those variables are unset, the seed falls back to these credentials — use them
+to sign in at http://localhost:3003/login:
+
+| Role | Email | Password |
+| --- | --- | --- |
+| `SUPER_ADMIN` | `admin@parto.ir` | `AdminPassword2026` |
+| `EDITOR` | `editor@parto.ir` | `EditorPassword2026` |
+
+These are development defaults only. Set `DEFAULT_ADMIN_PASSWORD` in `apps/api/.env`
+and re-run `npm run db:seed` before exposing the CMS anywhere non-local.
+
 
 > ⚠️ **Change `JWT_SECRET`, `JWT_REFRESH_SECRET` and `DEFAULT_ADMIN_PASSWORD` before deploying anywhere non-local.** The values in `.env.example` are placeholders only.
+
 
 ### 3. Run the CMS (API + admin)
 
@@ -182,21 +218,47 @@ Content strings come from the CMS; only static UI labels live in `src/messages/`
 |---|---|
 | `npm run dev` | Run API + admin via Turborepo |
 | `npm run build` | Build all CMS apps |
-| `npm run db:migrate` | Apply Prisma migrations |
-| `npm run db:seed` | Seed the database |
+| `npm run db:push` | Sync the schema to the database (**use this** — no migrations exist yet) |
+| `npm run db:migrate` | Prisma migrate dev — only once a `migrations/` history exists |
+| `npm run db:seed` | Seed the database (idempotent) |
 | `npm run db:studio` | Open Prisma Studio |
 | `npm run docker:up` / `docker:down` / `docker:logs` | Manage infrastructure containers |
 
 ### Adding a new content type
 
-1. Add the model to `parto-cms/apps/api/prisma/schema.prisma`, then `npm run db:migrate`.
+1. Add the model to `parto-cms/apps/api/prisma/schema.prisma`, then `npm run db:push`.
 2. Add a service/controller under `parto-cms/apps/api/src/modules/`.
 3. Expose a read endpoint in `modules/public/public.controller.ts` (filter by `status: 'PUBLISHED'`).
 4. Add an admin screen under `parto-cms/apps/admin/src/app/dashboard/`.
 5. Add a typed fetch function in `src/lib/cms/data.ts`.
 6. Consume it from a server component.
 
+### Known gaps
+
+Things a new maintainer should know before trusting this setup in production:
+
+- **No Prisma migration history.** `prisma/migrations/` does not exist; the schema is
+  applied with `db push`. Before the first production deploy, run
+  `npx prisma migrate dev --name init` against a scratch database to bake the current
+  schema into an initial migration, then switch releases to `prisma migrate deploy`.
+  Until then, `db:migrate:prod` has nothing to apply.
+- **No automated tests.** There is no test runner configured in any workspace. Verification
+  today is manual: type-check, build, and hitting the endpoints.
+- **Website build does not require the CMS, but degrades quietly.** `fetchCMS()` in
+  `src/lib/cms/data.ts` swallows fetch failures and returns `null`, so `npm run build`
+  succeeds even when the API is down — it just emits placeholder dynamic params
+  (e.g. `/fa/clients/placeholder`) and empty sections. **Start the CMS API before building
+  for production**, otherwise you ship a site with no content baked in.
+- **Public API is intentionally unauthenticated.** Everything under `/api/v1/api/public`
+  is open by design and filtered to `PUBLISHED` records. Do not add non-public fields to
+  those responses. There is no rate limiting in front of it.
+- **Media is served from the API.** Uploads resolve to `/uploads` on the API host, so the
+  API must be publicly reachable for images to load on the website.
+- **`parto-ems/` and `parto-oms/`** are separate, partially built apps. They are not part
+  of the website + CMS flow and are not covered by this setup guide.
+
 ---
+
 
 ## Tech Stack
 
@@ -219,8 +281,17 @@ Content strings come from the CMS; only static UI labels live in `src/messages/`
 
 ## Deployment
 
-1. Deploy `parto-cms/apps/api` with PostgreSQL, Redis and object storage; run migrations on release.
-2. Deploy `parto-cms/apps/admin`, pointing `NEXT_PUBLIC_API_URL` at the API.
-3. Deploy the root website with `CMS_API_URL` pointing at the API's public base path.
-4. Set `ADMIN_URL` on the API so CORS allows the deployed admin origin.
-5. Replace every secret from `.env.example` with generated values.
+1. **Create the initial migration first** (one-time) — see "Known gaps". Until
+   `prisma/migrations/` exists, `prisma migrate deploy` is a no-op and the production
+   schema will not be created.
+2. Deploy `parto-cms/apps/api` with PostgreSQL, Redis and object storage. Place its
+   environment in the API's own working directory and run `prisma migrate deploy`
+   (or `prisma db push` if you have accepted the no-migrations tradeoff) on release.
+3. Deploy `parto-cms/apps/admin`, pointing `NEXT_PUBLIC_API_URL` at the API.
+4. Deploy the root website with `CMS_API_URL` pointing at the API's public base path.
+   Ensure the API is reachable **at build time** so content is prerendered.
+5. Set `ADMIN_URL` on the API so CORS allows the deployed admin origin.
+6. Replace every secret from `.env.example` with generated values — especially
+   `JWT_SECRET`, `JWT_REFRESH_SECRET`, `DEFAULT_ADMIN_PASSWORD`, the database password
+   and the MinIO credentials.
+

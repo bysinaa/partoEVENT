@@ -54,9 +54,10 @@ export default function Clients({ clients, settings }: ClientsProps) {
               ) : null}
 
               <div className="mt-6 text-sm text-[#6B6E78] transition group-hover:text-white">
-                {t("viewClient")} &larr;
+                {t("viewClient")} <span aria-hidden="true">&larr;</span>
               </div>
             </Link>
+
           ))}
         </div>
       </Container>

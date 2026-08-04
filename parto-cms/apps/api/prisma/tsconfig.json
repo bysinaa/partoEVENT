@@ -1,0 +1,14 @@
+{
+  // The seed script lives outside the Nest `rootDir` (./src), so the parent
+  // tsconfig excludes it. This standalone project gives the editor and ts-node
+  // the Node types the seed needs (process.env) without affecting `nest build`.
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "rootDir": ".",
+    "outDir": "./dist",
+    "noEmit": true,
+    "types": ["node"]
+  },
+  "include": ["./**/*.ts", "../generated"],
+  "exclude": ["../node_modules"]
+}
