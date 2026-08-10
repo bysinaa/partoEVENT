@@ -24,7 +24,7 @@ export default function Clients({ clients, settings }: ClientsProps) {
         <div className="text-center">
           <h2 className="section-title">{t("title")}</h2>
           <p className="section-subtitle mt-4">
-            {settings?.tagline || settings?.taglineEn || t("subtitle")}
+            {settings?.tagline || t("subtitle")}
           </p>
         </div>
 
@@ -35,8 +35,17 @@ export default function Clients({ clients, settings }: ClientsProps) {
               href={`/clients/${client.slug}`}
               className="card group p-6"
             >
-              <div className="surface-muted text-accent flex h-20 w-20 items-center justify-center rounded-2xl text-2xl font-bold">
-                {client.name.slice(0, 2).toUpperCase()}
+              <div className="surface-muted text-accent flex h-20 w-20 items-center justify-center overflow-hidden rounded-2xl text-2xl font-bold">
+                {client.logo ? (
+                  <img
+                    src={client.logo.url}
+                    alt={client.logo.altText || client.logo.altTextFa || client.name}
+                    className="h-full w-full object-contain p-2"
+                    loading="lazy"
+                  />
+                ) : (
+                  client.name.slice(0, 2).toUpperCase()
+                )}
               </div>
 
               <h3 className="mt-6 text-xl font-semibold">

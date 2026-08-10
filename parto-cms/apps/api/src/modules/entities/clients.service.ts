@@ -51,7 +51,7 @@ export class ClientsService {
       include: { clientServices: { include: { service: true } }, projectClients: { include: { project: true } } },
     });
     if (!item) throw new NotFoundException('Client not found');
-    return item;
+    return { ...item, serviceIds: item.clientServices.map(({ serviceId }) => serviceId) };
   }
 
   private mapDto(dto: any) {
@@ -63,17 +63,13 @@ export class ClientsService {
       featured: 'featured', displayOrder: 'displayOrder', status: 'status',
       seoTitleEn: 'seoTitleEn', seoTitleFa: 'seoTitleFa',
       seoDescEn: 'seoDescEn', seoDescFa: 'seoDescFa',
+      logoId: 'logoId', coverImageId: 'coverImageId',
     };
     for (const [key, prismaKey] of Object.entries(fieldMap)) {
       const value = dto[key];
       if (value === undefined || value === '') continue;
       data[prismaKey] = value;
     }
-    // Map image fields
-    if (dto.logo !== undefined) data.logoId = dto.logo || null;
-    if (dto.logoId !== undefined) data.logoId = dto.logoId || null;
-    if (dto.coverImage !== undefined) data.coverImageId = dto.coverImage || null;
-    if (dto.coverImageId !== undefined) data.coverImageId = dto.coverImageId || null;
     return data;
   }
 

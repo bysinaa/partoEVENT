@@ -28,7 +28,16 @@ export default function ClientDetail({ client }: ClientDetailProps) {
             transition={{ duration: 0.8, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
             className="mb-12"
           >
-            <h1 className="section-title">{name}</h1>
+            <div className="flex items-center gap-5">
+              {client.logo ? (
+                <img
+                  src={client.logo.url}
+                  alt={client.logo.altText || client.logo.altTextFa || name}
+                  className="surface-muted h-20 w-20 rounded-2xl object-contain p-2"
+                />
+              ) : null}
+              <h1 className="section-title">{name}</h1>
+            </div>
 
             {location && (
               <p className="text-muted mt-3 text-sm">{location}</p>

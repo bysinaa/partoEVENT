@@ -11,7 +11,7 @@ export class LoginDto {
   @IsEmail()
   email!: string;
 
-  @ApiProperty({ example: 'admin123' })
+  @ApiProperty({ example: 'use-a-password-manager' })
   @IsString()
   @MinLength(6)
   password!: string;

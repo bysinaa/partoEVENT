@@ -7,7 +7,7 @@ import { ApiTags, ApiOperation, ApiBearerAuth, ApiConsumes, ApiBody } from '@nes
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
-import { MediaService } from './media.service';
+import { MediaService, validateUploadType } from './media.service';
 
 @ApiTags('Media')
 @Controller('media')
@@ -58,6 +58,14 @@ export class MediaController {
         },
       }),
       limits: { fileSize: 50 * 1024 * 1024 },
+      fileFilter: (_req, file, cb) => {
+        try {
+          validateUploadType(file);
+          cb(null, true);
+        } catch (error) {
+          cb(error as Error, false);
+        }
+      },
     }),
   )
   @ApiConsumes('multipart/form-data')

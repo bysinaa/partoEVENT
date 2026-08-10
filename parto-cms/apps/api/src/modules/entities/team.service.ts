@@ -40,23 +40,14 @@ export class TeamService {
 
   private mapDto(dto: any) {
     const data: any = {};
-    if (dto.nameEn !== undefined) data.nameEn = dto.nameEn;
-    if (dto.nameFa !== undefined) data.nameFa = dto.nameFa;
-    if (dto.positionEn !== undefined) data.positionEn = dto.positionEn;
-    if (dto.positionFa !== undefined) data.positionFa = dto.positionFa;
-    if (dto.email !== undefined) data.email = dto.email;
-    if (dto.phone !== undefined) data.phone = dto.phone;
-    if (dto.order !== undefined) data.order = dto.order;
-    if (dto.bioEn !== undefined) data.biographyEn = dto.bioEn;
-    if (dto.bioFa !== undefined) data.biographyFa = dto.bioFa;
-    if (dto.biographyEn !== undefined) data.biographyEn = dto.biographyEn;
-    if (dto.biographyFa !== undefined) data.biographyFa = dto.biographyFa;
-    if (dto.image !== undefined) data.photoId = dto.image || null;
-    if (dto.photoId !== undefined) data.photoId = dto.photoId || null;
-    if (dto.instagram !== undefined) data.instagram = dto.instagram;
-    if (dto.linkedin !== undefined) data.linkedin = dto.linkedin;
-    if (dto.twitter !== undefined) data.twitter = dto.twitter;
-    if (dto.isActive !== undefined) data.isActive = dto.isActive;
+    const fields = [
+      'nameEn', 'nameFa', 'positionEn', 'positionFa', 'email', 'phone',
+      'biographyEn', 'biographyFa', 'photoId', 'instagram', 'linkedin',
+      'twitter', 'order', 'isActive',
+    ];
+    for (const field of fields) {
+      if (dto[field] !== undefined) data[field] = dto[field];
+    }
     return data;
   }
 

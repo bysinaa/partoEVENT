@@ -12,6 +12,15 @@ import { Prisma } from '../../../generated/prisma';
 export class ProjectsService {
   constructor(private prisma: PrismaService) {}
 
+  private readonly include = {
+    author: { select: { id: true, name: true, email: true } },
+    projectClients: { include: { client: true } },
+  } as const;
+
+  private withClientIds<T extends { projectClients: { clientId: string }[] }>(project: T) {
+    return { ...project, clientIds: project.projectClients.map(({ clientId }) => clientId) };
+  }
+
   private generateSlug(title: string): string {
     return title
       .toLowerCase()
@@ -22,10 +31,11 @@ export class ProjectsService {
   }
 
   async findAll(query: ProjectQueryDto) {
-    const { page = 1, limit = 20, search, status } = query;
+    const { page = 1, limit = 20, search, status, isFeatured } = query;
 
     const where: Prisma.ProjectWhereInput = {
       ...(status && { status }),
+      ...(isFeatured !== undefined && { isFeatured }),
       ...(search && {
         OR: [
           { titleEn: { contains: search, mode: 'insensitive' } },
@@ -38,9 +48,7 @@ export class ProjectsService {
     const [items, total] = await Promise.all([
       this.prisma.project.findMany({
         where,
-        include: {
-          author: { select: { id: true, name: true, email: true } },
-        },
+        include: this.include,
         orderBy: { createdAt: 'desc' },
         skip: (page - 1) * limit,
         take: limit,
@@ -49,7 +57,7 @@ export class ProjectsService {
     ]);
 
     return {
-      items,
+      items: items.map((project) => this.withClientIds(project)),
       meta: {
         total,
         page,
@@ -62,59 +70,64 @@ export class ProjectsService {
   async findOne(id: string) {
     const project = await this.prisma.project.findUnique({
       where: { id },
-      include: {
-        author: { select: { id: true, name: true, email: true } },
-      },
+      include: this.include,
     });
     if (!project) {
       throw new NotFoundException('Project not found');
     }
-    return project;
+    return this.withClientIds(project);
   }
 
   async findBySlug(slug: string) {
     const project = await this.prisma.project.findUnique({
       where: { slug },
-      include: {
-        author: { select: { id: true, name: true, email: true } },
-      },
+      include: this.include,
     });
     if (!project) {
       throw new NotFoundException('Project not found');
     }
-    return project;
+    return this.withClientIds(project);
   }
 
-  async create(dto: any, authorId: string) {
+  async create(dto: CreateProjectDto, authorId: string) {
     const slug = dto.slug || this.generateSlug(dto.titleEn || '');
     const existing = await this.prisma.project.findUnique({ where: { slug } });
     if (existing) {
       throw new ConflictException('A project with this slug already exists');
     }
-    const data: any = {
+    const { clientIds = [] } = dto;
+    const data: Prisma.ProjectUncheckedCreateInput = {
       titleEn: dto.titleEn,
-      titleFa: dto.titleFa || '',
+      titleFa: dto.titleFa,
       slug,
-      descriptionEn: dto.descriptionEn || dto.description || '',
-      descriptionFa: dto.descriptionFa || '',
-      clientNameEn: dto.clientName || dto.clientNameEn || '',
-      clientNameFa: dto.clientNameFa || '',
-      locationEn: dto.locationEn || '',
-      locationFa: dto.locationFa || '',
-      year: dto.year || null,
-      isFeatured: dto.featured || dto.isFeatured || false,
-      status: dto.status || 'DRAFT',
-      coverImageId: dto.coverImage || dto.coverImageId || null,
-      thumbnailId: dto.thumbnailId || dto.featuredImage || dto.featuredImageId || null,
+      descriptionEn: dto.descriptionEn,
+      descriptionFa: dto.descriptionFa,
+      locationEn: dto.locationEn,
+      locationFa: dto.locationFa,
+      year: dto.year,
+      isFeatured: dto.isFeatured ?? false,
+      status: dto.status ?? 'DRAFT',
+      coverImageId: dto.coverImageId,
+      thumbnailId: dto.thumbnailId,
+      seoTitleEn: dto.seoTitleEn,
+      seoTitleFa: dto.seoTitleFa,
+      seoDescEn: dto.seoDescEn,
+      seoDescFa: dto.seoDescFa,
       createdBy: authorId,
     };
-    return this.prisma.project.create({
-      data,
-      include: { author: { select: { id: true, name: true, email: true } } },
+    const project = await this.prisma.project.create({
+      data: {
+        ...data,
+        projectClients: clientIds.length
+          ? { createMany: { data: clientIds.map((clientId) => ({ clientId })) } }
+          : undefined,
+      },
+      include: this.include,
     });
+    return this.withClientIds(project);
   }
 
-  async update(id: string, dto: any) {
+  async update(id: string, dto: UpdateProjectDto) {
     await this.findOne(id);
     if (dto.slug) {
       const existing = await this.prisma.project.findFirst({
@@ -124,36 +137,30 @@ export class ProjectsService {
         throw new ConflictException('Slug already in use');
       }
     }
-    const data: any = {};
-    if (dto.titleEn !== undefined) data.titleEn = dto.titleEn;
-    if (dto.titleFa !== undefined) data.titleFa = dto.titleFa;
-    if (dto.slug !== undefined) data.slug = dto.slug;
-    if (dto.descriptionEn !== undefined) data.descriptionEn = dto.descriptionEn;
-    if (dto.descriptionFa !== undefined) data.descriptionFa = dto.descriptionFa;
-    if (dto.contentEn !== undefined) data.contentEn = dto.contentEn;
-    if (dto.contentFa !== undefined) data.contentFa = dto.contentFa;
-    if (dto.clientName !== undefined) data.clientNameEn = dto.clientName;
-    if (dto.clientNameEn !== undefined) data.clientNameEn = dto.clientNameEn;
-    if (dto.clientNameFa !== undefined) data.clientNameFa = dto.clientNameFa;
-    if (dto.locationEn !== undefined) data.locationEn = dto.locationEn;
-    if (dto.locationFa !== undefined) data.locationFa = dto.locationFa;
-    if (dto.year !== undefined) data.year = dto.year;
-    if (dto.servicesUsed !== undefined) data.servicesUsed = dto.servicesUsed;
-    if (dto.tags !== undefined) data.tags = dto.tags;
-    if (dto.featured !== undefined) data.isFeatured = dto.featured;
-    if (dto.isFeatured !== undefined) data.isFeatured = dto.isFeatured;
-    if (dto.status !== undefined) data.status = dto.status;
-    if (dto.featuredImage !== undefined) data.thumbnailId = dto.featuredImage || null;
-    if (dto.featuredImageId !== undefined) data.thumbnailId = dto.featuredImageId || null;
-    if (dto.coverImage !== undefined) data.coverImageId = dto.coverImage || null;
-    if (dto.coverImageId !== undefined) data.coverImageId = dto.coverImageId || null;
-    if (dto.thumbnailId !== undefined) data.thumbnailId = dto.thumbnailId || null;
-    if (dto.description !== undefined) data.descriptionEn = dto.description;
-    return this.prisma.project.update({
+    const { slug, clientIds, ...fields } = dto;
+    const data: Prisma.ProjectUncheckedUpdateInput = {
+      ...fields,
+      ...(slug ? { slug } : {}),
+    };
+    const project = await this.prisma.project.update({
       where: { id },
-      data,
-      include: { author: { select: { id: true, name: true, email: true } } },
+      data: {
+        ...data,
+        ...(clientIds !== undefined && {
+          projectClients: {
+            deleteMany: { clientId: { notIn: clientIds } },
+            ...(clientIds.length && {
+              createMany: {
+                data: clientIds.map((clientId) => ({ clientId })),
+                skipDuplicates: true,
+              },
+            }),
+          },
+        }),
+      },
+      include: this.include,
     });
+    return this.withClientIds(project);
   }
 
   async remove(id: string) {

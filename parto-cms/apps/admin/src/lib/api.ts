@@ -36,7 +36,7 @@ export const authApi = {
 };
 
 const createCrudApi = (resource: string) => ({
-  list: () => api.get(`/${resource}`),
+  list: (params?: Record<string, unknown>) => api.get(`/${resource}`, { params }),
   getById: (id: string) => api.get(`/${resource}/${id}`),
   create: (data: any) => api.post(`/${resource}`, data),
   update: (id: string, data: any) => api.patch(`/${resource}/${id}`, data),

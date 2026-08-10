@@ -8,12 +8,12 @@ import { Loader2 } from 'lucide-react';
 
 const fields: FormField[] = [
   { name: 'titleEn', label: 'Title (English)', type: 'text', required: true },
-  { name: 'titleFa', label: 'Title (Farsi)', type: 'text', required: true },
+  { name: 'titleFa', label: 'Title (Farsi)', type: 'text' },
   { name: 'slug', label: 'Slug', type: 'text' },
   { name: 'descriptionEn', label: 'Description (English)', type: 'textarea', span: 'full' },
   { name: 'descriptionFa', label: 'Description (Farsi)', type: 'textarea', span: 'full' },
-  { name: 'icon', label: 'Icon', type: 'text' },
-  { name: 'image', label: 'Image', type: 'image' },
+  { name: 'iconId', label: 'Icon Media ID', type: 'text' },
+  { name: 'coverImageId', label: 'Cover Image', type: 'image' },
   { name: 'status', label: 'Status', type: 'select', options: [
     { label: 'Published', value: 'PUBLISHED' },
     { label: 'Draft', value: 'DRAFT' },

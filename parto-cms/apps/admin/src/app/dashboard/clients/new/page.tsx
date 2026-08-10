@@ -1,18 +1,20 @@
 'use client';
 
 import EntityForm, { FormField } from '@/components/EntityForm';
-import { clientsApi } from '@/lib/api';
+import { clientsApi, servicesApi } from '@/lib/api';
+import { useEffect, useMemo, useState } from 'react';
 
-const fields: FormField[] = [
+const baseFields: FormField[] = [
   { name: 'name', label: 'Name (Farsi)', type: 'text', required: true, placeholder: 'نام شریت' },
-  { name: 'englishName', label: 'Name (English)', type: 'text', required: true, placeholder: 'Company Name' },
+  { name: 'englishName', label: 'Name (English)', type: 'text', placeholder: 'Company Name' },
   { name: 'slug', label: 'Slug', type: 'text', placeholder: 'auto-generated-from-english-name' },
-  { name: 'industry', label: 'Industry', type: 'text', placeholder: 'Event Production, etc.' },
   { name: 'descriptionEn', label: 'Description (English)', type: 'textarea', span: 'full' },
   { name: 'descriptionFa', label: 'Description (Farsi)', type: 'textarea', span: 'full' },
+  { name: 'locationEn', label: 'Location (English)', type: 'text' },
+  { name: 'locationFa', label: 'Location (Farsi)', type: 'text' },
   { name: 'website', label: 'Website', type: 'text', placeholder: 'https://example.com' },
-  { name: 'logo', label: 'Logo', type: 'image' },
-  { name: 'coverImage', label: 'Cover Image', type: 'image' },
+  { name: 'logoId', label: 'Logo', type: 'image' },
+  { name: 'coverImageId', label: 'Cover Image', type: 'image' },
   { name: 'status', label: 'Status', type: 'select', options: [
     { label: 'Published', value: 'PUBLISHED' },
     { label: 'Draft', value: 'DRAFT' },
@@ -20,12 +22,23 @@ const fields: FormField[] = [
   ]},
   { name: 'displayOrder', label: 'Display Order', type: 'number' },
   { name: 'featured', label: 'Featured', type: 'toggle' },
-  { name: 'contactName', label: 'Contact Person', type: 'text' },
-  { name: 'contactEmail', label: 'Contact Email', type: 'text' },
-  { name: 'contactPhone', label: 'Contact Phone', type: 'text' },
 ];
 
 export default function NewClientPage() {
+  const [serviceOptions, setServiceOptions] = useState<{ label: string; value: string }[]>([]);
+  useEffect(() => {
+    servicesApi.list({ limit: 100 }).then(({ data }) => setServiceOptions(
+      data.items.map((service: { id: string; titleEn: string; titleFa?: string }) => ({
+        label: service.titleEn || service.titleFa || service.id,
+        value: service.id,
+      })),
+    ));
+  }, []);
+  const fields = useMemo<FormField[]>(() => [
+    ...baseFields,
+    { name: 'serviceIds', label: 'Services', type: 'multiselect', options: serviceOptions, span: 'full' },
+  ], [serviceOptions]);
+
   return (
     <EntityForm
       title="New Client"

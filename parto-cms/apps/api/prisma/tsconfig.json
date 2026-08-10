@@ -4,7 +4,7 @@
   // the Node types the seed needs (process.env) without affecting `nest build`.
   "extends": "../tsconfig.json",
   "compilerOptions": {
-    "rootDir": ".",
+    "rootDir": "..",
     "outDir": "./dist",
     "noEmit": true,
     "types": ["node"]

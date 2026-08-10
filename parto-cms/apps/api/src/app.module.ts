@@ -7,12 +7,14 @@ import { MediaModule } from './modules/media/media.module';
 import { EntitiesModule } from './modules/entities/entities.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { PublicModule } from './modules/public/public.module';
+import { validateEnvironment } from './config/environment';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: ['.env.local', '.env'],
+      validate: validateEnvironment,
     }),
     PrismaModule,
     AuthModule,

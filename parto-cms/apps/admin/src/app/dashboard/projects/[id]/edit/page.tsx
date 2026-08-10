@@ -1,7 +1,7 @@
 'use client';
 
 import EntityForm from '@/components/EntityForm';
-import { projectsApi } from '@/lib/api';
+import { clientsApi, projectsApi } from '@/lib/api';
 import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Loader2, AlertCircle } from 'lucide-react';
@@ -11,14 +11,23 @@ export default function EditProjectPage() {
   const params = useParams();
   const id = params.id as string;
   const [entity, setEntity] = useState<Record<string, unknown> | null>(null);
+  const [clientOptions, setClientOptions] = useState<{ label: string; value: string }[]>([]);
   const [loadError, setLoadError] = useState('');
 
   useEffect(() => {
     let active = true;
-    projectsApi
-      .getById(id)
-      .then((r: { data: Record<string, unknown> }) => {
-        if (active) setEntity(r.data);
+    Promise.all([projectsApi.getById(id), clientsApi.list({ limit: 100 })])
+      .then(([projectResponse, clientsResponse]) => {
+        if (!active) return;
+        const project = projectResponse.data;
+        setEntity({
+          ...project,
+          clientIds: project.clientIds ?? project.projectClients?.map(({ clientId }: { clientId: string }) => clientId) ?? [],
+        });
+        setClientOptions(clientsResponse.data.items.map((client: { id: string; name: string; englishName?: string }) => ({
+          label: client.englishName || client.name || client.id,
+          value: client.id,
+        })));
       })
       .catch((err: unknown) => {
         console.error('[projects.edit] failed to load', err);
@@ -57,7 +66,7 @@ export default function EditProjectPage() {
   }
 
   return (
-    <EntityForm title="Edit Project" fields={projectFields} entity={entity} isNew={false} backUrl="/dashboard/projects"
+    <EntityForm title="Edit Project" fields={projectFields(clientOptions)} entity={entity} isNew={false} backUrl="/dashboard/projects"
       onSubmit={async (data: Record<string, unknown>) => { await projectsApi.update(id, data); }} />
   );
 }

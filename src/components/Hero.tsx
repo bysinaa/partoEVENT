@@ -2,6 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import { motion } from "framer-motion";
+import Image from "next/image";
 
 import Container from "./Container";
 
@@ -40,52 +41,63 @@ export default function Hero({ data }: HeroProps) {
       <div className="glow-orb absolute bottom-0 left-1/4 h-[250px] w-[350px] max-w-full opacity-20" />
 
       <Container>
-        <div className="relative z-10 max-w-4xl">
-          {/* Badge */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-          >
-            <span className="chip-accent mb-8 inline-flex items-center gap-2 rounded-full px-5 py-2 text-sm font-medium">
-              <span className="dot-accent animate-pulse-glow inline-block h-1.5 w-1.5 rounded-full" />
-              {t("badge")}
-            </span>
-          </motion.div>
+        <div className="relative z-10 grid w-full items-center gap-8 lg:grid-cols-2">
+          <div className="max-w-xl">
+            {/* Badge */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+            >
+              <span className="chip-accent mb-8 inline-flex items-center gap-2 rounded-full px-5 py-2 text-sm font-medium">
+                <span className="dot-accent animate-pulse-glow inline-block h-1.5 w-1.5 rounded-full" />
+                {t("badge")}
+              </span>
+            </motion.div>
 
-          {/* Title */}
-          <motion.h1
+            <h1 className="sr-only">{title}</h1>
+
+            {/* Description */}
+            <motion.p
+              initial={{ opacity: 0, y: 40 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.9, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
+              className="section-subtitle mt-8"
+            >
+              {subtitle}
+            </motion.p>
+
+            {/* Buttons */}
+            <motion.div
+              initial={{ opacity: 0, y: 40 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.9, delay: 0.45, ease: [0.16, 1, 0.3, 1] }}
+              className="mt-12 flex flex-wrap gap-4"
+            >
+              <button className="btn-primary">
+                {t("primaryCta")}
+              </button>
+              <button className="btn-secondary">
+                {t("secondaryCta")}
+              </button>
+            </motion.div>
+          </div>
+
+          {/* Brand mark */}
+          <motion.div
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.9, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
-            className="text-hero mt-8"
+            className="flex justify-center"
           >
-            <span className="text-gradient-white">{title}</span>
-          </motion.h1>
-
-          {/* Description */}
-          <motion.p
-            initial={{ opacity: 0, y: 40 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.9, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
-            className="section-subtitle mt-8"
-          >
-            {subtitle}
-          </motion.p>
-
-          {/* Buttons */}
-          <motion.div
-            initial={{ opacity: 0, y: 40 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.9, delay: 0.45, ease: [0.16, 1, 0.3, 1] }}
-            className="mt-12 flex flex-wrap gap-4"
-          >
-            <button className="btn-primary">
-              {t("primaryCta")}
-            </button>
-            <button className="btn-secondary">
-              {t("secondaryCta")}
-            </button>
+            <Image
+              src="/brand/parto-orange.png"
+              alt=""
+              width={4500}
+              height={4500}
+              className="h-56 w-56 scale-[1.35] object-contain sm:h-72 sm:w-72 lg:h-80 lg:w-80"
+              priority
+            />
           </motion.div>
         </div>
       </Container>

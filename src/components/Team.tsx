@@ -55,12 +55,14 @@ export default function Team({ members }: TeamProps) {
                   transition={{ duration: 0.7, delay: index * 0.08, ease: [0.16, 1, 0.3, 1] }}
                   className="card-team group"
                 >
-                  {/* Portrait photo placeholder */}
                   <div className="media-placeholder relative mx-auto mt-8 aspect-[3/4] w-40 shrink-0 overflow-hidden rounded-2xl">
-                    {member.photoId ? (
-                      <div className="flex h-full w-full items-center justify-center">
-                        <span className="text-4xl" aria-hidden="true">👤</span>
-                      </div>
+                    {member.photo ? (
+                      <img
+                        src={member.photo.url}
+                        alt={member.photo.altText || member.photo.altTextFa || name}
+                        className="h-full w-full object-cover"
+                        loading="lazy"
+                      />
                     ) : null}
                   </div>
 

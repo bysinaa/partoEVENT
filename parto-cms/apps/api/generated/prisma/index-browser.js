@@ -211,8 +211,6 @@ exports.Prisma.ProjectScalarFieldEnum = {
   year: 'year',
   locationEn: 'locationEn',
   locationFa: 'locationFa',
-  clientNameEn: 'clientNameEn',
-  clientNameFa: 'clientNameFa',
   seoTitleEn: 'seoTitleEn',
   seoTitleFa: 'seoTitleFa',
   seoDescEn: 'seoDescEn',

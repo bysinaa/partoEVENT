@@ -28,6 +28,13 @@ const DEFAULTS: SettingsMap = {
   fontFaBody: 'peyda',
   fontEnHeading: 'peydaLatin',
   fontEnBody: 'peydaLatin',
+  siteName: '',
+  siteNameEn: '',
+  tagline: '',
+  taglineEn: '',
+  description: '',
+  descriptionEn: '',
+  logo: '',
   contactTitle: '',
   contactTitleEn: '',
   contactDescription: '',
@@ -88,8 +95,7 @@ export default function SettingsPage() {
           setInitial(loaded);
         }
       } catch {
-        // An empty settings table is normal on a fresh install, so this is not
-        // surfaced as an error — the form just shows defaults.
+        if (!cancelled) setError('Failed to load settings. Please reload and try again.');
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -165,6 +171,24 @@ export default function SettingsPage() {
           Theme, typography and contact details for the public website.
         </p>
       </div>
+
+      <section className="rounded-xl border border-surface-300 bg-white p-6">
+        <h2 className="text-lg font-medium text-surface-900">Site Identity</h2>
+        <p className="mt-1 text-sm text-surface-500">
+          Used by website navigation, metadata, hero content and footer.
+        </p>
+        <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <Field label="Site name (Persian)" dir="rtl" value={values.siteName} onChange={(v) => set('siteName', v)} />
+          <Field label="Site name (English)" value={values.siteNameEn} onChange={(v) => set('siteNameEn', v)} />
+          <Field label="Tagline (Persian)" dir="rtl" value={values.tagline} onChange={(v) => set('tagline', v)} />
+          <Field label="Tagline (English)" value={values.taglineEn} onChange={(v) => set('taglineEn', v)} />
+          <Textarea label="Description (Persian)" dir="rtl" value={values.description} onChange={(v) => set('description', v)} />
+          <Textarea label="Description (English)" value={values.descriptionEn} onChange={(v) => set('descriptionEn', v)} />
+          <div className="sm:col-span-2">
+            <Field label="Logo URL" dir="ltr" placeholder="https://example.com/logo.svg" value={values.logo} onChange={(v) => set('logo', v)} />
+          </div>
+        </div>
+      </section>
 
       {/* ─── Website theme ─────────────────────── */}
       <section className="rounded-xl border border-surface-300 bg-white p-6">

@@ -8606,8 +8606,6 @@ export namespace Prisma {
     year: number | null
     locationEn: string | null
     locationFa: string | null
-    clientNameEn: string | null
-    clientNameFa: string | null
     seoTitleEn: string | null
     seoTitleFa: string | null
     seoDescEn: string | null
@@ -8631,8 +8629,6 @@ export namespace Prisma {
     year: number | null
     locationEn: string | null
     locationFa: string | null
-    clientNameEn: string | null
-    clientNameFa: string | null
     seoTitleEn: string | null
     seoTitleFa: string | null
     seoDescEn: string | null
@@ -8656,8 +8652,6 @@ export namespace Prisma {
     year: number
     locationEn: number
     locationFa: number
-    clientNameEn: number
-    clientNameFa: number
     seoTitleEn: number
     seoTitleFa: number
     seoDescEn: number
@@ -8691,8 +8685,6 @@ export namespace Prisma {
     year?: true
     locationEn?: true
     locationFa?: true
-    clientNameEn?: true
-    clientNameFa?: true
     seoTitleEn?: true
     seoTitleFa?: true
     seoDescEn?: true
@@ -8716,8 +8708,6 @@ export namespace Prisma {
     year?: true
     locationEn?: true
     locationFa?: true
-    clientNameEn?: true
-    clientNameFa?: true
     seoTitleEn?: true
     seoTitleFa?: true
     seoDescEn?: true
@@ -8741,8 +8731,6 @@ export namespace Prisma {
     year?: true
     locationEn?: true
     locationFa?: true
-    clientNameEn?: true
-    clientNameFa?: true
     seoTitleEn?: true
     seoTitleFa?: true
     seoDescEn?: true
@@ -8853,8 +8841,6 @@ export namespace Prisma {
     year: number | null
     locationEn: string | null
     locationFa: string | null
-    clientNameEn: string | null
-    clientNameFa: string | null
     seoTitleEn: string | null
     seoTitleFa: string | null
     seoDescEn: string | null
@@ -8897,8 +8883,6 @@ export namespace Prisma {
     year?: boolean
     locationEn?: boolean
     locationFa?: boolean
-    clientNameEn?: boolean
-    clientNameFa?: boolean
     seoTitleEn?: boolean
     seoTitleFa?: boolean
     seoDescEn?: boolean
@@ -8925,8 +8909,6 @@ export namespace Prisma {
     year?: boolean
     locationEn?: boolean
     locationFa?: boolean
-    clientNameEn?: boolean
-    clientNameFa?: boolean
     seoTitleEn?: boolean
     seoTitleFa?: boolean
     seoDescEn?: boolean
@@ -8951,8 +8933,6 @@ export namespace Prisma {
     year?: boolean
     locationEn?: boolean
     locationFa?: boolean
-    clientNameEn?: boolean
-    clientNameFa?: boolean
     seoTitleEn?: boolean
     seoTitleFa?: boolean
     seoDescEn?: boolean
@@ -8977,8 +8957,6 @@ export namespace Prisma {
     year?: boolean
     locationEn?: boolean
     locationFa?: boolean
-    clientNameEn?: boolean
-    clientNameFa?: boolean
     seoTitleEn?: boolean
     seoTitleFa?: boolean
     seoDescEn?: boolean
@@ -8988,7 +8966,7 @@ export namespace Prisma {
     updatedAt?: boolean
   }
 
-  export type ProjectOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "slug" | "titleEn" | "titleFa" | "descriptionEn" | "descriptionFa" | "thumbnailId" | "coverImageId" | "isFeatured" | "status" | "year" | "locationEn" | "locationFa" | "clientNameEn" | "clientNameFa" | "seoTitleEn" | "seoTitleFa" | "seoDescEn" | "seoDescFa" | "createdBy" | "createdAt" | "updatedAt", ExtArgs["result"]["project"]>
+  export type ProjectOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "slug" | "titleEn" | "titleFa" | "descriptionEn" | "descriptionFa" | "thumbnailId" | "coverImageId" | "isFeatured" | "status" | "year" | "locationEn" | "locationFa" | "seoTitleEn" | "seoTitleFa" | "seoDescEn" | "seoDescFa" | "createdBy" | "createdAt" | "updatedAt", ExtArgs["result"]["project"]>
   export type ProjectInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     author?: boolean | Project$authorArgs<ExtArgs>
     projectClients?: boolean | Project$projectClientsArgs<ExtArgs>
@@ -9021,8 +8999,6 @@ export namespace Prisma {
       year: number | null
       locationEn: string | null
       locationFa: string | null
-      clientNameEn: string | null
-      clientNameFa: string | null
       seoTitleEn: string | null
       seoTitleFa: string | null
       seoDescEn: string | null
@@ -9468,8 +9444,6 @@ export namespace Prisma {
     readonly year: FieldRef<"Project", 'Int'>
     readonly locationEn: FieldRef<"Project", 'String'>
     readonly locationFa: FieldRef<"Project", 'String'>
-    readonly clientNameEn: FieldRef<"Project", 'String'>
-    readonly clientNameFa: FieldRef<"Project", 'String'>
     readonly seoTitleEn: FieldRef<"Project", 'String'>
     readonly seoTitleFa: FieldRef<"Project", 'String'>
     readonly seoDescEn: FieldRef<"Project", 'String'>
@@ -22469,8 +22443,6 @@ export namespace Prisma {
     year: 'year',
     locationEn: 'locationEn',
     locationFa: 'locationFa',
-    clientNameEn: 'clientNameEn',
-    clientNameFa: 'clientNameFa',
     seoTitleEn: 'seoTitleEn',
     seoTitleFa: 'seoTitleFa',
     seoDescEn: 'seoDescEn',
@@ -23288,8 +23260,6 @@ export namespace Prisma {
     year?: IntNullableFilter<"Project"> | number | null
     locationEn?: StringNullableFilter<"Project"> | string | null
     locationFa?: StringNullableFilter<"Project"> | string | null
-    clientNameEn?: StringNullableFilter<"Project"> | string | null
-    clientNameFa?: StringNullableFilter<"Project"> | string | null
     seoTitleEn?: StringNullableFilter<"Project"> | string | null
     seoTitleFa?: StringNullableFilter<"Project"> | string | null
     seoDescEn?: StringNullableFilter<"Project"> | string | null
@@ -23315,8 +23285,6 @@ export namespace Prisma {
     year?: SortOrderInput | SortOrder
     locationEn?: SortOrderInput | SortOrder
     locationFa?: SortOrderInput | SortOrder
-    clientNameEn?: SortOrderInput | SortOrder
-    clientNameFa?: SortOrderInput | SortOrder
     seoTitleEn?: SortOrderInput | SortOrder
     seoTitleFa?: SortOrderInput | SortOrder
     seoDescEn?: SortOrderInput | SortOrder
@@ -23345,8 +23313,6 @@ export namespace Prisma {
     year?: IntNullableFilter<"Project"> | number | null
     locationEn?: StringNullableFilter<"Project"> | string | null
     locationFa?: StringNullableFilter<"Project"> | string | null
-    clientNameEn?: StringNullableFilter<"Project"> | string | null
-    clientNameFa?: StringNullableFilter<"Project"> | string | null
     seoTitleEn?: StringNullableFilter<"Project"> | string | null
     seoTitleFa?: StringNullableFilter<"Project"> | string | null
     seoDescEn?: StringNullableFilter<"Project"> | string | null
@@ -23372,8 +23338,6 @@ export namespace Prisma {
     year?: SortOrderInput | SortOrder
     locationEn?: SortOrderInput | SortOrder
     locationFa?: SortOrderInput | SortOrder
-    clientNameEn?: SortOrderInput | SortOrder
-    clientNameFa?: SortOrderInput | SortOrder
     seoTitleEn?: SortOrderInput | SortOrder
     seoTitleFa?: SortOrderInput | SortOrder
     seoDescEn?: SortOrderInput | SortOrder
@@ -23405,8 +23369,6 @@ export namespace Prisma {
     year?: IntNullableWithAggregatesFilter<"Project"> | number | null
     locationEn?: StringNullableWithAggregatesFilter<"Project"> | string | null
     locationFa?: StringNullableWithAggregatesFilter<"Project"> | string | null
-    clientNameEn?: StringNullableWithAggregatesFilter<"Project"> | string | null
-    clientNameFa?: StringNullableWithAggregatesFilter<"Project"> | string | null
     seoTitleEn?: StringNullableWithAggregatesFilter<"Project"> | string | null
     seoTitleFa?: StringNullableWithAggregatesFilter<"Project"> | string | null
     seoDescEn?: StringNullableWithAggregatesFilter<"Project"> | string | null
@@ -24890,8 +24852,6 @@ export namespace Prisma {
     year?: number | null
     locationEn?: string | null
     locationFa?: string | null
-    clientNameEn?: string | null
-    clientNameFa?: string | null
     seoTitleEn?: string | null
     seoTitleFa?: string | null
     seoDescEn?: string | null
@@ -24916,8 +24876,6 @@ export namespace Prisma {
     year?: number | null
     locationEn?: string | null
     locationFa?: string | null
-    clientNameEn?: string | null
-    clientNameFa?: string | null
     seoTitleEn?: string | null
     seoTitleFa?: string | null
     seoDescEn?: string | null
@@ -24942,8 +24900,6 @@ export namespace Prisma {
     year?: NullableIntFieldUpdateOperationsInput | number | null
     locationEn?: NullableStringFieldUpdateOperationsInput | string | null
     locationFa?: NullableStringFieldUpdateOperationsInput | string | null
-    clientNameEn?: NullableStringFieldUpdateOperationsInput | string | null
-    clientNameFa?: NullableStringFieldUpdateOperationsInput | string | null
     seoTitleEn?: NullableStringFieldUpdateOperationsInput | string | null
     seoTitleFa?: NullableStringFieldUpdateOperationsInput | string | null
     seoDescEn?: NullableStringFieldUpdateOperationsInput | string | null
@@ -24968,8 +24924,6 @@ export namespace Prisma {
     year?: NullableIntFieldUpdateOperationsInput | number | null
     locationEn?: NullableStringFieldUpdateOperationsInput | string | null
     locationFa?: NullableStringFieldUpdateOperationsInput | string | null
-    clientNameEn?: NullableStringFieldUpdateOperationsInput | string | null
-    clientNameFa?: NullableStringFieldUpdateOperationsInput | string | null
     seoTitleEn?: NullableStringFieldUpdateOperationsInput | string | null
     seoTitleFa?: NullableStringFieldUpdateOperationsInput | string | null
     seoDescEn?: NullableStringFieldUpdateOperationsInput | string | null
@@ -24994,8 +24948,6 @@ export namespace Prisma {
     year?: number | null
     locationEn?: string | null
     locationFa?: string | null
-    clientNameEn?: string | null
-    clientNameFa?: string | null
     seoTitleEn?: string | null
     seoTitleFa?: string | null
     seoDescEn?: string | null
@@ -25019,8 +24971,6 @@ export namespace Prisma {
     year?: NullableIntFieldUpdateOperationsInput | number | null
     locationEn?: NullableStringFieldUpdateOperationsInput | string | null
     locationFa?: NullableStringFieldUpdateOperationsInput | string | null
-    clientNameEn?: NullableStringFieldUpdateOperationsInput | string | null
-    clientNameFa?: NullableStringFieldUpdateOperationsInput | string | null
     seoTitleEn?: NullableStringFieldUpdateOperationsInput | string | null
     seoTitleFa?: NullableStringFieldUpdateOperationsInput | string | null
     seoDescEn?: NullableStringFieldUpdateOperationsInput | string | null
@@ -25043,8 +24993,6 @@ export namespace Prisma {
     year?: NullableIntFieldUpdateOperationsInput | number | null
     locationEn?: NullableStringFieldUpdateOperationsInput | string | null
     locationFa?: NullableStringFieldUpdateOperationsInput | string | null
-    clientNameEn?: NullableStringFieldUpdateOperationsInput | string | null
-    clientNameFa?: NullableStringFieldUpdateOperationsInput | string | null
     seoTitleEn?: NullableStringFieldUpdateOperationsInput | string | null
     seoTitleFa?: NullableStringFieldUpdateOperationsInput | string | null
     seoDescEn?: NullableStringFieldUpdateOperationsInput | string | null
@@ -26662,8 +26610,6 @@ export namespace Prisma {
     year?: SortOrder
     locationEn?: SortOrder
     locationFa?: SortOrder
-    clientNameEn?: SortOrder
-    clientNameFa?: SortOrder
     seoTitleEn?: SortOrder
     seoTitleFa?: SortOrder
     seoDescEn?: SortOrder
@@ -26691,8 +26637,6 @@ export namespace Prisma {
     year?: SortOrder
     locationEn?: SortOrder
     locationFa?: SortOrder
-    clientNameEn?: SortOrder
-    clientNameFa?: SortOrder
     seoTitleEn?: SortOrder
     seoTitleFa?: SortOrder
     seoDescEn?: SortOrder
@@ -26716,8 +26660,6 @@ export namespace Prisma {
     year?: SortOrder
     locationEn?: SortOrder
     locationFa?: SortOrder
-    clientNameEn?: SortOrder
-    clientNameFa?: SortOrder
     seoTitleEn?: SortOrder
     seoTitleFa?: SortOrder
     seoDescEn?: SortOrder
@@ -28131,8 +28073,6 @@ export namespace Prisma {
     year?: number | null
     locationEn?: string | null
     locationFa?: string | null
-    clientNameEn?: string | null
-    clientNameFa?: string | null
     seoTitleEn?: string | null
     seoTitleFa?: string | null
     seoDescEn?: string | null
@@ -28156,8 +28096,6 @@ export namespace Prisma {
     year?: number | null
     locationEn?: string | null
     locationFa?: string | null
-    clientNameEn?: string | null
-    clientNameFa?: string | null
     seoTitleEn?: string | null
     seoTitleFa?: string | null
     seoDescEn?: string | null
@@ -28240,8 +28178,6 @@ export namespace Prisma {
     year?: IntNullableFilter<"Project"> | number | null
     locationEn?: StringNullableFilter<"Project"> | string | null
     locationFa?: StringNullableFilter<"Project"> | string | null
-    clientNameEn?: StringNullableFilter<"Project"> | string | null
-    clientNameFa?: StringNullableFilter<"Project"> | string | null
     seoTitleEn?: StringNullableFilter<"Project"> | string | null
     seoTitleFa?: StringNullableFilter<"Project"> | string | null
     seoDescEn?: StringNullableFilter<"Project"> | string | null
@@ -28825,8 +28761,6 @@ export namespace Prisma {
     year?: number | null
     locationEn?: string | null
     locationFa?: string | null
-    clientNameEn?: string | null
-    clientNameFa?: string | null
     seoTitleEn?: string | null
     seoTitleFa?: string | null
     seoDescEn?: string | null
@@ -28850,8 +28784,6 @@ export namespace Prisma {
     year?: number | null
     locationEn?: string | null
     locationFa?: string | null
-    clientNameEn?: string | null
-    clientNameFa?: string | null
     seoTitleEn?: string | null
     seoTitleFa?: string | null
     seoDescEn?: string | null
@@ -28944,8 +28876,6 @@ export namespace Prisma {
     year?: NullableIntFieldUpdateOperationsInput | number | null
     locationEn?: NullableStringFieldUpdateOperationsInput | string | null
     locationFa?: NullableStringFieldUpdateOperationsInput | string | null
-    clientNameEn?: NullableStringFieldUpdateOperationsInput | string | null
-    clientNameFa?: NullableStringFieldUpdateOperationsInput | string | null
     seoTitleEn?: NullableStringFieldUpdateOperationsInput | string | null
     seoTitleFa?: NullableStringFieldUpdateOperationsInput | string | null
     seoDescEn?: NullableStringFieldUpdateOperationsInput | string | null
@@ -28969,8 +28899,6 @@ export namespace Prisma {
     year?: NullableIntFieldUpdateOperationsInput | number | null
     locationEn?: NullableStringFieldUpdateOperationsInput | string | null
     locationFa?: NullableStringFieldUpdateOperationsInput | string | null
-    clientNameEn?: NullableStringFieldUpdateOperationsInput | string | null
-    clientNameFa?: NullableStringFieldUpdateOperationsInput | string | null
     seoTitleEn?: NullableStringFieldUpdateOperationsInput | string | null
     seoTitleFa?: NullableStringFieldUpdateOperationsInput | string | null
     seoDescEn?: NullableStringFieldUpdateOperationsInput | string | null
@@ -29613,8 +29541,6 @@ export namespace Prisma {
     year?: number | null
     locationEn?: string | null
     locationFa?: string | null
-    clientNameEn?: string | null
-    clientNameFa?: string | null
     seoTitleEn?: string | null
     seoTitleFa?: string | null
     seoDescEn?: string | null
@@ -29647,8 +29573,6 @@ export namespace Prisma {
     year?: NullableIntFieldUpdateOperationsInput | number | null
     locationEn?: NullableStringFieldUpdateOperationsInput | string | null
     locationFa?: NullableStringFieldUpdateOperationsInput | string | null
-    clientNameEn?: NullableStringFieldUpdateOperationsInput | string | null
-    clientNameFa?: NullableStringFieldUpdateOperationsInput | string | null
     seoTitleEn?: NullableStringFieldUpdateOperationsInput | string | null
     seoTitleFa?: NullableStringFieldUpdateOperationsInput | string | null
     seoDescEn?: NullableStringFieldUpdateOperationsInput | string | null
@@ -29672,8 +29596,6 @@ export namespace Prisma {
     year?: NullableIntFieldUpdateOperationsInput | number | null
     locationEn?: NullableStringFieldUpdateOperationsInput | string | null
     locationFa?: NullableStringFieldUpdateOperationsInput | string | null
-    clientNameEn?: NullableStringFieldUpdateOperationsInput | string | null
-    clientNameFa?: NullableStringFieldUpdateOperationsInput | string | null
     seoTitleEn?: NullableStringFieldUpdateOperationsInput | string | null
     seoTitleFa?: NullableStringFieldUpdateOperationsInput | string | null
     seoDescEn?: NullableStringFieldUpdateOperationsInput | string | null
@@ -29697,8 +29619,6 @@ export namespace Prisma {
     year?: NullableIntFieldUpdateOperationsInput | number | null
     locationEn?: NullableStringFieldUpdateOperationsInput | string | null
     locationFa?: NullableStringFieldUpdateOperationsInput | string | null
-    clientNameEn?: NullableStringFieldUpdateOperationsInput | string | null
-    clientNameFa?: NullableStringFieldUpdateOperationsInput | string | null
     seoTitleEn?: NullableStringFieldUpdateOperationsInput | string | null
     seoTitleFa?: NullableStringFieldUpdateOperationsInput | string | null
     seoDescEn?: NullableStringFieldUpdateOperationsInput | string | null

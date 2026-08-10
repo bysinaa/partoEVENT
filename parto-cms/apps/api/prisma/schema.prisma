@@ -166,8 +166,6 @@ model Project {
   year          Int?
   locationEn    String?       @map("location_en")
   locationFa    String?       @map("location_fa")
-  clientNameEn  String?       @map("client_name_en")
-  clientNameFa  String?       @map("client_name_fa")
   seoTitleEn    String?       @map("seo_title_en")
   seoTitleFa    String?       @map("seo_title_fa")
   seoDescEn     String?       @map("seo_desc_en")

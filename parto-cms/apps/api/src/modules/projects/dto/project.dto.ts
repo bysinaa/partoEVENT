@@ -1,5 +1,5 @@
-import { IsString, IsOptional, IsBoolean, IsEnum, IsInt, Min, Max } from 'class-validator';
-import { Type } from 'class-transformer';
+import { ArrayUnique, IsArray, IsString, IsOptional, IsBoolean, IsEnum, IsInt, Min, Max } from 'class-validator';
+import { Transform, Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
 import { ContentStatus } from '../../../../generated/prisma';
 
@@ -14,22 +14,22 @@ export class CreateProjectDto {
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
-  titleFa?: string;
+  titleFa?: string | null;
 
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
-  slug?: string;
+  slug?: string | null;
 
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
-  descriptionEn?: string;
+  descriptionEn?: string | null;
 
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
-  descriptionFa?: string;
+  descriptionFa?: string | null;
 
   @ApiPropertyOptional({ description: 'Media id of the thumbnail' })
   @IsOptional()
@@ -57,47 +57,44 @@ export class CreateProjectDto {
   @IsInt()
   @Min(1900)
   @Max(2200)
-  year?: number;
+  year?: number | null;
 
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
-  locationEn?: string;
+  locationEn?: string | null;
 
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
-  locationFa?: string;
+  locationFa?: string | null;
+
+  @ApiPropertyOptional({ type: [String], description: 'Related Client ids' })
+  @IsOptional()
+  @IsArray()
+  @ArrayUnique()
+  @IsString({ each: true })
+  clientIds?: string[];
 
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
-  clientNameEn?: string;
+  seoTitleEn?: string | null;
 
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
-  clientNameFa?: string;
+  seoTitleFa?: string | null;
 
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
-  seoTitleEn?: string;
+  seoDescEn?: string | null;
 
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
-  seoTitleFa?: string;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsString()
-  seoDescEn?: string;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsString()
-  seoDescFa?: string;
+  seoDescFa?: string | null;
 }
 
 // Every field optional, including `titleEn`, so a partial edit is valid.
@@ -105,17 +102,27 @@ export class UpdateProjectDto extends PartialType(CreateProjectDto) {}
 
 export class ProjectQueryDto {
   @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
   page?: number;
 
   @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
   limit?: number;
 
   @IsOptional()
+  @IsString()
   search?: string;
 
   @IsOptional()
+  @IsEnum(ContentStatus)
   status?: ContentStatus;
 
   @IsOptional()
+  @Transform(({ value }) => value === true || value === 'true')
+  @IsBoolean()
   isFeatured?: boolean;
 }

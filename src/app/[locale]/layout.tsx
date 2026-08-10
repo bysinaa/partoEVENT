@@ -27,14 +27,8 @@ export async function generateMetadata({
   const t = await getTranslations({ locale, namespace: "metadata" });
   const settings = await getSettings(lang);
 
-  const siteName =
-    lang === "fa"
-      ? settings?.siteName || t("title")
-      : settings?.siteNameEn || t("title");
-  const description =
-    lang === "fa"
-      ? settings?.description || t("description")
-      : settings?.descriptionEn || t("description");
+  const siteName = settings?.siteName || t("title");
+  const description = settings?.description || t("description");
 
   return {
     title: {
@@ -42,6 +36,7 @@ export async function generateMetadata({
       template: `%s | ${siteName}`,
     },
     description,
+    icons: { icon: "/brand/parto-monochrome.png?v=1" },
     keywords: t("keywords"),
     authors: [{ name: "Parto" }],
     openGraph: {

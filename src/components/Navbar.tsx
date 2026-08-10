@@ -39,7 +39,7 @@ export default function Navbar({ settings }: NavbarProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
 
-  const companyName = settings?.siteName || (locale === "fa" ? "پرتو" : settings?.siteNameEn || "Parto");
+  const companyName = settings?.siteName || (locale === "fa" ? "پرتو" : "Parto");
   const isTeamPage = pathname === "/team";
 
   const handleScroll = useCallback(() => {
@@ -83,7 +83,7 @@ export default function Navbar({ settings }: NavbarProps) {
     return () => { document.body.style.overflow = ""; };
   }, [mobileOpen]);
 
-  const logoUrl = settings?.logo;
+  const logoUrl = settings?.logo || "/brand/parto-monochrome.png";
 
   return (
     <>
@@ -116,9 +116,10 @@ export default function Navbar({ settings }: NavbarProps) {
                     <Image
                       src={logoUrl}
                       alt={companyName ?? ""}
-                      width={36}
-                      height={36}
-                      className="h-9 w-auto transition-all duration-300 group-hover:scale-110"
+                      width={4500}
+                      height={4500}
+                      className="h-14 w-14 scale-125 object-contain transition-transform duration-300 group-hover:scale-[1.35]"
+                      priority
                     />
                     {/* Subtle glow behind logo */}
                     <div className="logo-glow absolute -inset-2 rounded-full opacity-0 blur-lg transition-opacity duration-500 group-hover:opacity-100" />

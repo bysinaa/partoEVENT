@@ -3,7 +3,7 @@
  * Uses the self-hosted Parto CMS API as the website content source.
  */
 
-import type { Locale } from "@/i18n/routing";
+import type { Locale } from "../../i18n/routing";
 
 const CMS_API_URL =
   process.env.CMS_API_URL || "http://localhost:3006/api/v1/api/public";
@@ -38,6 +38,8 @@ interface Client {
   displayOrder: number;
   status: string;
   clientServices?: { service: Service }[];
+  logo?: CMSMedia | null;
+  coverImage?: CMSMedia | null;
 }
 
 interface Project {
@@ -54,9 +56,9 @@ interface Project {
   year: number | null;
   locationEn: string | null;
   locationFa: string | null;
-  clientNameEn: string | null;
-  clientNameFa: string | null;
-  projectClients?: { client: Client }[];
+  clients?: Client[];
+  thumbnail?: CMSMedia | null;
+  coverImage?: CMSMedia | null;
 }
 
 interface TeamMember {
@@ -75,20 +77,18 @@ interface TeamMember {
   twitter: string | null;
   order: number;
   isActive: boolean;
-  photo?: Media;
+  photo?: CMSMedia | null;
 }
 
-interface Media {
+export interface CMSMedia {
   id: string;
   filename: string;
-  originalName: string;
   mimeType: string;
-  type: string;
-  size: number;
   width: number | null;
   height: number | null;
   altText: string | null;
   altTextFa: string | null;
+  url: string;
 }
 
 interface Stats {
@@ -109,7 +109,7 @@ function asOptionalString(value: unknown): string | null {
 }
 
 // Helper to get localized field from an object with En/Fa variants
-function getLocalizedField(
+export function getLocalizedField(
   item: object,
   fieldName: string,
   locale: Locale
@@ -127,7 +127,7 @@ function getLocalizedField(
 }
 
 // Helper to get localized optional field
-function getLocalizedOptional(
+export function getLocalizedOptional(
   item: object,
   fieldName: string,
   locale: Locale
@@ -142,6 +142,10 @@ function getLocalizedOptional(
   }
 
   return asOptionalString(record[enField]);
+}
+
+export function getClientName(client: Pick<Client, "name" | "englishName">, locale: Locale): string {
+  return locale === "fa" ? client.name : client.englishName || client.name;
 }
 
 /**
@@ -160,7 +164,7 @@ function getLocalizedOptional(
  * swap in `next: { revalidate: N, tags: [...] }` and invalidate with
  * `revalidateTag` from a publish webhook.
  */
-async function fetchCMS<T>(endpoint: string): Promise<T | null> {
+export async function fetchCMS<T>(endpoint: string): Promise<T | null> {
   try {
     const res = await fetch(`${CMS_API_URL}${endpoint}`, {
       cache: "no-store",
@@ -185,48 +189,40 @@ async function fetchCMS<T>(endpoint: string): Promise<T | null> {
 
 export interface Settings {
   siteName: string;
-  siteNameEn: string;
   tagline: string;
-  taglineEn: string;
   description: string;
-  descriptionEn: string;
   logo: string | null;
-  favicon: string | null;
   email: string;
   phone: string;
   address: string;
-  addressEn: string;
   socialLinks: {
     instagram?: string;
-    linkedin?: string;
-    twitter?: string;
-    facebook?: string;
   };
 }
 
 export async function getSettings(locale: Locale): Promise<Settings | null> {
-  void locale;
   const settings = await fetchCMS<CMSRecord>("/settings");
   if (!settings) return null;
 
+  return mapSettings(settings, locale);
+}
+
+export function mapSettings(settings: CMSRecord, locale: Locale): Settings {
+  const localized = (key: string) =>
+    locale === "en"
+      ? asString(settings[`${key}En`]) || asString(settings[key])
+      : asString(settings[key]);
+
   return {
-    siteName: asString(settings.siteName) || "پرتو",
-    siteNameEn: asString(settings.siteNameEn) || "Parto",
-    tagline: asString(settings.tagline),
-    taglineEn: asString(settings.taglineEn),
-    description: asString(settings.description),
-    descriptionEn: asString(settings.descriptionEn),
+    siteName: localized("siteName") || (locale === "fa" ? "پرتو" : "Parto"),
+    tagline: localized("tagline"),
+    description: localized("description"),
     logo: asOptionalString(settings.logo),
-    favicon: asOptionalString(settings.favicon),
     email: asString(settings.email),
     phone: asString(settings.phone),
-    address: asString(settings.address),
-    addressEn: asString(settings.addressEn),
+    address: localized("address"),
     socialLinks: {
       instagram: asOptionalString(settings.instagram) || undefined,
-      linkedin: asOptionalString(settings.linkedin) || undefined,
-      twitter: asOptionalString(settings.twitter) || undefined,
-      facebook: asOptionalString(settings.facebook) || undefined,
     },
   };
 }
@@ -268,6 +264,8 @@ export interface CMSClient {
   description: string | null;
   logoId: string | null;
   coverImageId: string | null;
+  logo: CMSMedia | null;
+  coverImage: CMSMedia | null;
   website: string | null;
   location: string | null;
   featured: boolean;
@@ -282,11 +280,13 @@ export async function getClients(locale: Locale): Promise<CMSClient[]> {
   return data.items.map((c) => ({
     id: c.id,
     slug: c.slug,
-    name: getLocalizedField(c, "name", locale) || c.name,
+    name: getClientName(c, locale),
     englishName: c.englishName,
     description: getLocalizedOptional(c, "description", locale),
     logoId: c.logoId,
     coverImageId: c.coverImageId,
+    logo: c.logo ?? null,
+    coverImage: c.coverImage ?? null,
     website: c.website,
     location: getLocalizedOptional(c, "location", locale),
     featured: c.featured,
@@ -313,11 +313,13 @@ export async function getClientBySlug(
   return {
     id: client.id,
     slug: client.slug,
-    name: getLocalizedField(client, "name", locale) || client.name,
+    name: getClientName(client, locale),
     englishName: client.englishName,
     description: getLocalizedOptional(client, "description", locale),
     logoId: client.logoId,
     coverImageId: client.coverImageId,
+    logo: client.logo ?? null,
+    coverImage: client.coverImage ?? null,
     website: client.website,
     location: getLocalizedOptional(client, "location", locale),
     featured: client.featured,
@@ -343,75 +345,58 @@ export interface CMSProject {
   description: string | null;
   thumbnailId: string | null;
   coverImageId: string | null;
+  thumbnail: CMSMedia | null;
+  coverImage: CMSMedia | null;
   isFeatured: boolean;
   year: number | null;
   location: string | null;
-  clientName: string | null;
   clients: CMSClient[];
 }
 
-export async function getFeaturedProjects(locale: Locale): Promise<CMSProject[]> {
-  const data = await fetchCMS<{ items: Project[] }>("/projects?featured=true&limit=10");
-  if (!data?.items) return [];
-
-  return data.items.map((p) => ({
-    id: p.id,
-    slug: p.slug,
-    title: getLocalizedField(p, "title", locale),
-    description: getLocalizedOptional(p, "description", locale),
-    thumbnailId: p.thumbnailId,
-    coverImageId: p.coverImageId,
-    isFeatured: p.isFeatured,
-    year: p.year,
-    location: getLocalizedOptional(p, "location", locale),
-    clientName: getLocalizedOptional(p, "clientName", locale),
-    clients: (p.projectClients || []).map((pc) => ({
-      id: pc.client.id,
-      slug: pc.client.slug,
-      name: getLocalizedField(pc.client, "name", locale) || pc.client.name,
-      englishName: pc.client.englishName,
-      description: getLocalizedOptional(pc.client, "description", locale),
-      logoId: pc.client.logoId,
-      coverImageId: pc.client.coverImageId,
-      website: pc.client.website,
-      location: getLocalizedOptional(pc.client, "location", locale),
-      featured: pc.client.featured,
-      displayOrder: pc.client.displayOrder,
+export function mapProject(project: Project, locale: Locale): CMSProject {
+  return {
+    id: project.id,
+    slug: project.slug,
+    title: getLocalizedField(project, "title", locale),
+    description: getLocalizedOptional(project, "description", locale),
+    thumbnailId: project.thumbnailId,
+    coverImageId: project.coverImageId,
+    thumbnail: project.thumbnail ?? null,
+    coverImage: project.coverImage ?? null,
+    isFeatured: project.isFeatured,
+    year: project.year,
+    location: getLocalizedOptional(project, "location", locale),
+    clients: (project.clients || []).map((client) => ({
+      id: client.id,
+      slug: client.slug,
+      name: getClientName(client, locale),
+      englishName: client.englishName,
+      description: getLocalizedOptional(client, "description", locale),
+      logoId: client.logoId,
+      coverImageId: client.coverImageId,
+      logo: client.logo ?? null,
+      coverImage: client.coverImage ?? null,
+      website: client.website,
+      location: getLocalizedOptional(client, "location", locale),
+      featured: client.featured,
+      displayOrder: client.displayOrder,
       services: [],
     })),
-  }));
+  };
+}
+
+export async function getFeaturedProjects(locale: Locale): Promise<CMSProject[]> {
+  const data = await fetchCMS<{ items: Project[] }>("/projects?isFeatured=true&limit=10");
+  if (!data?.items) return [];
+
+  return data.items.map((project) => mapProject(project, locale));
 }
 
 export async function getProjects(locale: Locale): Promise<CMSProject[]> {
   const data = await fetchCMS<{ items: Project[] }>("/projects?limit=100");
   if (!data?.items) return [];
 
-  return data.items.map((p) => ({
-    id: p.id,
-    slug: p.slug,
-    title: getLocalizedField(p, "title", locale),
-    description: getLocalizedOptional(p, "description", locale),
-    thumbnailId: p.thumbnailId,
-    coverImageId: p.coverImageId,
-    isFeatured: p.isFeatured,
-    year: p.year,
-    location: getLocalizedOptional(p, "location", locale),
-    clientName: getLocalizedOptional(p, "clientName", locale),
-    clients: (p.projectClients || []).map((pc) => ({
-      id: pc.client.id,
-      slug: pc.client.slug,
-      name: getLocalizedField(pc.client, "name", locale) || pc.client.name,
-      englishName: pc.client.englishName,
-      description: getLocalizedOptional(pc.client, "description", locale),
-      logoId: pc.client.logoId,
-      coverImageId: pc.client.coverImageId,
-      website: pc.client.website,
-      location: getLocalizedOptional(pc.client, "location", locale),
-      featured: pc.client.featured,
-      displayOrder: pc.client.displayOrder,
-      services: [],
-    })),
-  }));
+  return data.items.map((project) => mapProject(project, locale));
 }
 
 export async function getProjectBySlug(
@@ -421,32 +406,7 @@ export async function getProjectBySlug(
   const project = await fetchCMS<Project>(`/projects/${slug}`);
   if (!project) return null;
 
-  return {
-    id: project.id,
-    slug: project.slug,
-    title: getLocalizedField(project, "title", locale),
-    description: getLocalizedOptional(project, "description", locale),
-    thumbnailId: project.thumbnailId,
-    coverImageId: project.coverImageId,
-    isFeatured: project.isFeatured,
-    year: project.year,
-    location: getLocalizedOptional(project, "location", locale),
-    clientName: getLocalizedOptional(project, "clientName", locale),
-    clients: (project.projectClients || []).map((pc) => ({
-      id: pc.client.id,
-      slug: pc.client.slug,
-      name: getLocalizedField(pc.client, "name", locale) || pc.client.name,
-      englishName: pc.client.englishName,
-      description: getLocalizedOptional(pc.client, "description", locale),
-      logoId: pc.client.logoId,
-      coverImageId: pc.client.coverImageId,
-      website: pc.client.website,
-      location: getLocalizedOptional(pc.client, "location", locale),
-      featured: pc.client.featured,
-      displayOrder: pc.client.displayOrder,
-      services: [],
-    })),
-  };
+  return mapProject(project, locale);
 }
 
 // ─── Team Members ─────────────────────────────────────────────────────────────
@@ -459,6 +419,7 @@ export interface CMSTeamMember {
   phone: string | null;
   biography: string | null;
   photoId: string | null;
+  photo: CMSMedia | null;
   instagram: string | null;
   linkedin: string | null;
   twitter: string | null;
@@ -477,6 +438,7 @@ export async function getTeamMembers(locale: Locale): Promise<CMSTeamMember[]> {
     phone: m.phone,
     biography: getLocalizedOptional(m, "biography", locale),
     photoId: m.photoId,
+    photo: m.photo ?? null,
     instagram: m.instagram,
     linkedin: m.linkedin,
     twitter: m.twitter,
@@ -513,8 +475,8 @@ export async function getHomePageData(locale: Locale): Promise<HomePageData> {
 
   return {
     hero: {
-      title: locale === "fa" ? (settings?.siteName || "پرتو") : (settings?.siteNameEn || "Parto"),
-      subtitle: locale === "fa" ? (settings?.tagline || "") : (settings?.taglineEn || ""),
+      title: settings?.siteName || (locale === "fa" ? "پرتو" : "Parto"),
+      subtitle: settings?.tagline || "",
     },
     stats,
   };

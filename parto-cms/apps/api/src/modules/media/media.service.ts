@@ -8,6 +8,40 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { MediaType, Prisma } from '../../../generated/prisma';
 import * as fs from 'fs';
 import * as path from 'path';
+import sharp from 'sharp';
+import { mediaUrl } from './media.response';
+
+export const SUPPORTED_UPLOADS: Readonly<Record<string, readonly string[]>> = {
+  'image/jpeg': ['.jpg', '.jpeg'],
+  'image/png': ['.png'],
+  'image/webp': ['.webp'],
+  'image/gif': ['.gif'],
+  'image/svg+xml': ['.svg'],
+  'video/mp4': ['.mp4'],
+  'video/webm': ['.webm'],
+};
+
+export function validateUploadType(file: { mimetype?: string; originalname?: string }): void {
+  const mimeType = file.mimetype?.toLowerCase() || '';
+  const extension = path.extname(file.originalname || '').toLowerCase();
+  if (!SUPPORTED_UPLOADS[mimeType]?.includes(extension)) {
+    throw new BadRequestException(
+      'Unsupported file type. Allowed: JPG, PNG, WebP, GIF, SVG, MP4, and WebM.',
+    );
+  }
+}
+
+export function safeUploadPath(uploadDir: string, filename: string): string {
+  if (!filename || path.basename(filename) !== filename) {
+    throw new BadRequestException('Invalid media filename');
+  }
+  const root = path.resolve(uploadDir);
+  const filePath = path.resolve(root, filename);
+  if (!filePath.startsWith(`${root}${path.sep}`)) {
+    throw new BadRequestException('Invalid media filename');
+  }
+  return filePath;
+}
 
 @Injectable()
 export class MediaService {
@@ -26,8 +60,7 @@ export class MediaService {
   }
 
   private toMediaResponse<T extends { id: string; filename: string }>(media: T) {
-    const apiUrl = (process.env.API_URL || `http://localhost:${process.env.API_PORT || '3006'}`).replace(/\/$/, '');
-    const fileUrl = `${apiUrl}/uploads/${media.filename}`;
+    const fileUrl = mediaUrl(media.filename);
 
     return {
       ...media,
@@ -81,7 +114,14 @@ export class MediaService {
 
   async delete(id: string) {
     const media = await this.findOne(id);
-    return this.prisma.media.delete({ where: { id } });
+    const filePath = safeUploadPath(this.uploadDir, media.filename);
+    const deleted = await this.prisma.media.delete({ where: { id } });
+    try {
+      await fs.promises.unlink(filePath);
+    } catch (error: any) {
+      if (error?.code !== 'ENOENT') throw error;
+    }
+    return deleted;
   }
 
   async update(id: string, data: { altText?: string }) {
@@ -98,16 +138,50 @@ export class MediaService {
     if (!file) {
       throw new BadRequestException('No file uploaded');
     }
-    const media = await this.prisma.media.create({
-      data: {
-        originalName: file.originalname,
-        filename: file.filename,
-        mimeType: file.mimetype,
-        size: file.size,
-        type: this.getMediaType(file.mimetype),
-      },
-    });
-    return this.toMediaResponse(media);
+    try {
+      validateUploadType(file);
+    } catch (error) {
+      if (file.filename) {
+        await fs.promises.unlink(safeUploadPath(this.uploadDir, file.filename)).catch((unlinkError: any) => {
+          if (unlinkError?.code !== 'ENOENT') throw unlinkError;
+        });
+      }
+      throw error;
+    }
+
+    let width: number | null = null;
+    let height: number | null = null;
+    if (file.mimetype.startsWith('image/')) {
+      try {
+        const metadata = await sharp(file.path).metadata();
+        width = metadata.width ?? null;
+        height = metadata.height ?? null;
+      } catch {
+        await fs.promises.unlink(safeUploadPath(this.uploadDir, file.filename)).catch((unlinkError: any) => {
+          if (unlinkError?.code !== 'ENOENT') throw unlinkError;
+        });
+        throw new BadRequestException('Invalid image file');
+      }
+    }
+    try {
+      const media = await this.prisma.media.create({
+        data: {
+          originalName: file.originalname,
+          filename: file.filename,
+          mimeType: file.mimetype,
+          size: file.size,
+          type: this.getMediaType(file.mimetype),
+          width,
+          height,
+        },
+      });
+      return this.toMediaResponse(media);
+    } catch (error) {
+      await fs.promises.unlink(safeUploadPath(this.uploadDir, file.filename)).catch((unlinkError: any) => {
+        if (unlinkError?.code !== 'ENOENT') throw unlinkError;
+      });
+      throw error;
+    }
   }
 
   async getStats() {

@@ -13,21 +13,32 @@ import {
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { PrismaService } from '../../prisma/prisma.service';
 import { NoCacheInterceptor } from '../../common/interceptors/no-cache.interceptor';
-import { isPublicSettingKey } from '../entities/settings.contract';
-
-function withMediaUrl<T extends { filename: string }>(media: T | null) {
-  if (!media) return null;
-  return {
-    ...media,
-    url: `/uploads/${media.filename}`,
-  };
-}
+import {
+  BOOLEAN_SETTING_KEYS,
+  isPublicSettingKey,
+} from '../entities/settings.contract';
+import { Prisma } from '../../../generated/prisma';
+import {
+  PublicMediaRecord,
+  publicMediaSelect,
+  toPublicMedia,
+} from '../media/media.response';
 
 @ApiTags('Public API')
 @Controller('api/public')
 @UseInterceptors(NoCacheInterceptor)
 export class PublicController {
   constructor(private prisma: PrismaService) {}
+
+  private async getMediaMap(ids: Array<string | null | undefined>) {
+    const uniqueIds = [...new Set(ids.filter((id): id is string => !!id))];
+    if (!uniqueIds.length) return new Map<string, ReturnType<typeof toPublicMedia>>();
+    const media = await this.prisma.media.findMany({
+      where: { id: { in: uniqueIds } },
+      select: publicMediaSelect,
+    });
+    return new Map(media.map((item: PublicMediaRecord) => [item.id, toPublicMedia(item)]));
+  }
 
   // ─── Clients ────────────────────────────────
   
@@ -52,7 +63,15 @@ export class PublicController {
       this.prisma.client.count({ where }),
     ]);
     
-    return { items, meta: { total, page: +(page || '1'), limit: +(limit || '20'), totalPages: Math.ceil(total / +(limit || '20')) } };
+    const media = await this.getMediaMap(items.flatMap((item) => [item.logoId, item.coverImageId]));
+    return {
+      items: items.map((item) => ({
+        ...item,
+        logo: item.logoId ? media.get(item.logoId) ?? null : null,
+        coverImage: item.coverImageId ? media.get(item.coverImageId) ?? null : null,
+      })),
+      meta: { total, page: +(page || '1'), limit: +(limit || '20'), totalPages: Math.ceil(total / +(limit || '20')) },
+    };
   }
 
   @Get('clients/:slug')
@@ -68,7 +87,12 @@ export class PublicController {
     if (!client) {
       throw new NotFoundException('Client not found');
     }
-    return client;
+    const media = await this.getMediaMap([client.logoId, client.coverImageId]);
+    return {
+      ...client,
+      logo: client.logoId ? media.get(client.logoId) ?? null : null,
+      coverImage: client.coverImageId ? media.get(client.coverImageId) ?? null : null,
+    };
   }
 
   // ─── Services ────────────────────────────────
@@ -111,11 +135,13 @@ export class PublicController {
   async getProjects(
     @Query('page') page?: string,
     @Query('limit') limit?: string,
-    @Query('featured') featured?: string,
+    @Query('isFeatured') isFeatured?: string,
     @Query('clientId') clientId?: string,
   ) {
-    const where: any = { status: 'PUBLISHED' };
-    if (featured === 'true') where.isFeatured = true;
+    const where: Prisma.ProjectWhereInput = { status: 'PUBLISHED' };
+    if (isFeatured === 'true' || isFeatured === 'false') {
+      where.isFeatured = isFeatured === 'true';
+    }
     if (clientId) {
       where.projectClients = { some: { clientId } };
     }
@@ -131,7 +157,24 @@ export class PublicController {
       this.prisma.project.count({ where }),
     ]);
     
-    return { items, meta: { total, page: +(page || '1'), limit: +(limit || '20'), totalPages: Math.ceil(total / +(limit || '20')) } };
+    const media = await this.getMediaMap(items.flatMap((item) => [
+      item.thumbnailId,
+      item.coverImageId,
+      ...item.projectClients.flatMap(({ client }) => [client.logoId, client.coverImageId]),
+    ]));
+    return {
+      items: items.map(({ projectClients, ...item }) => ({
+        ...item,
+        thumbnail: item.thumbnailId ? media.get(item.thumbnailId) ?? null : null,
+        coverImage: item.coverImageId ? media.get(item.coverImageId) ?? null : null,
+        clients: projectClients.map(({ client }) => ({
+          ...client,
+          logo: client.logoId ? media.get(client.logoId) ?? null : null,
+          coverImage: client.coverImageId ? media.get(client.coverImageId) ?? null : null,
+        })),
+      })),
+      meta: { total, page: +(page || '1'), limit: +(limit || '20'), totalPages: Math.ceil(total / +(limit || '20')) },
+    };
   }
 
   @Get('projects/:slug')
@@ -144,7 +187,22 @@ export class PublicController {
     if (!project) {
       throw new NotFoundException('Project not found');
     }
-    return project;
+    const media = await this.getMediaMap([
+      project.thumbnailId,
+      project.coverImageId,
+      ...project.projectClients.flatMap(({ client }) => [client.logoId, client.coverImageId]),
+    ]);
+    const { projectClients, ...item } = project;
+    return {
+      ...item,
+      thumbnail: project.thumbnailId ? media.get(project.thumbnailId) ?? null : null,
+      coverImage: project.coverImageId ? media.get(project.coverImageId) ?? null : null,
+      clients: projectClients.map(({ client }) => ({
+        ...client,
+        logo: client.logoId ? media.get(client.logoId) ?? null : null,
+        coverImage: client.coverImageId ? media.get(client.coverImageId) ?? null : null,
+      })),
+    };
   }
 
   // ─── Team Members ─────────────────────────────
@@ -161,7 +219,7 @@ export class PublicController {
         orderBy: { order: 'asc' },
         skip: ((+(page || '1')) - 1) * +(limit || '20'),
         take: +(limit || '20'),
-        include: { photo: true },
+        include: { photo: { select: publicMediaSelect } },
       }),
       this.prisma.teamMember.count({ where: { isActive: true } }),
     ]);
@@ -169,7 +227,7 @@ export class PublicController {
     return {
       items: items.map((item) => ({
         ...item,
-        photo: withMediaUrl(item.photo),
+        photo: toPublicMedia(item.photo),
       })),
       meta: { total, page: +(page || '1'), limit: +(limit || '20'), totalPages: Math.ceil(total / +(limit || '20')) },
     };
@@ -256,7 +314,7 @@ export class PublicController {
     const result: Record<string, any> = {};
     for (const setting of settings) {
       if (!isPublicSettingKey(setting.key)) continue;
-      result[setting.key] = this.parseValue(setting.value);
+      result[setting.key] = this.parseSetting(setting.key, setting.value);
     }
     return result;
   }
@@ -275,16 +333,12 @@ export class PublicController {
     if (!setting) {
       return null;
     }
-    return this.parseValue(setting.value);
+    return this.parseSetting(setting.key, setting.value);
   }
 
-  /** Values are stored as strings; JSON ones are decoded, plain ones passed through. */
-  private parseValue(value: string): any {
-    try {
-      return JSON.parse(value);
-    } catch {
-      return value;
-    }
+  /** SiteSetting persists strings; only documented boolean keys are decoded. */
+  private parseSetting(key: string, value: string): string | boolean {
+    return BOOLEAN_SETTING_KEYS.has(key) ? value === 'true' : value;
   }
 
   // ─── Media ────────────────────────────────
@@ -292,8 +346,11 @@ export class PublicController {
   @Get('media/:id')
   @ApiOperation({ summary: 'Get media by ID' })
   async getMediaById(@Param('id') id: string) {
-    const media = await this.prisma.media.findUnique({ where: { id } });
-    return withMediaUrl(media);
+    const media = await this.prisma.media.findUnique({
+      where: { id },
+      select: publicMediaSelect,
+    });
+    return toPublicMedia(media);
   }
 
   // ─── Stats ────────────────────────────────

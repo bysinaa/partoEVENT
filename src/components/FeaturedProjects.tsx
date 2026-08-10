@@ -33,8 +33,9 @@ export default function FeaturedProjects({ projects }: FeaturedProjectsProps) {
           <div className="mt-16 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {projects.map((project, index) => {
               const title = project.title || t("untitled");
+              const image = project.thumbnail || project.coverImage;
               const categoryTitle =
-                project.clients[0]?.name || project.clientName || project.year || "";
+                project.clients[0]?.name || project.year || "";
 
               return (
                 <motion.article
@@ -50,10 +51,19 @@ export default function FeaturedProjects({ projects }: FeaturedProjectsProps) {
                   className="card-project group"
                 >
                   <div className="media-placeholder media-16x9 relative flex items-center justify-center overflow-hidden">
+                    {image ? (
+                      <img
+                        src={image.url}
+                        alt={image.altText || image.altTextFa || title}
+                        className="h-full w-full object-cover"
+                        loading="lazy"
+                      />
+                    ) : (
+                      <div className="relative z-10 px-6 text-center text-5xl font-black opacity-20">
+                        {title.slice(0, 2).toUpperCase()}
+                      </div>
+                    )}
                     <div className="scrim-bottom pointer-events-none absolute inset-0 opacity-60" />
-                    <div className="relative z-10 px-6 text-center text-5xl font-black opacity-20">
-                      {title.slice(0, 2).toUpperCase()}
-                    </div>
                   </div>
 
                   <div className="p-6">

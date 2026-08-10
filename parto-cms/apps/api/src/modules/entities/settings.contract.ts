@@ -27,6 +27,15 @@ export const FALLBACK_THEME_ID = 'solar-refined';
 
 export const TYPOGRAPHY_PRESETS = ['editorial', 'grotesk', 'humanist'] as const;
 
+export const BOOLEAN_SETTING_KEYS = new Set([
+  'showPhone',
+  'showEmail',
+  'showWhatsapp',
+  'showTelegram',
+  'showInstagram',
+  'showMap',
+]);
+
 /** Font stacks valid for Persian slots. */
 export const FA_FONT_KEYS = ['peyda', 'peydaTight', 'systemFa'] as const;
 
@@ -103,6 +112,8 @@ export const SETTING_VALIDATORS: Record<string, Validator> = {
   // ─── Site identity ────────────────────────
   siteName: isString(200),
   siteNameEn: isString(200),
+  tagline: isString(500),
+  taglineEn: isString(500),
   description: isString(1000),
   descriptionEn: isString(1000),
   logo: isString(500),
@@ -153,6 +164,8 @@ export const PUBLIC_SETTING_KEYS = new Set<string>([
   'fontEnBody',
   'siteName',
   'siteNameEn',
+  'tagline',
+  'taglineEn',
   'description',
   'descriptionEn',
   'logo',

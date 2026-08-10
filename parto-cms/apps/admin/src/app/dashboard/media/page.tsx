@@ -4,6 +4,16 @@ import { useEffect, useState } from 'react';
 import { Upload, Trash2, Search, Grid, List } from 'lucide-react';
 import { mediaApi } from '@/lib/api';
 
+const ACCEPTED_TYPES = [
+  'image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/svg+xml',
+  'video/mp4', 'video/webm',
+];
+
+function uploadErrorMessage(error: any): string {
+  const message = error?.response?.data?.message;
+  return Array.isArray(message) ? message.join('; ') : message || error?.message || 'Upload failed';
+}
+
 interface MediaItem {
   id: string;
   filename: string;
@@ -17,6 +27,7 @@ export default function MediaPage() {
   const [items, setItems] = useState<MediaItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isUploading, setIsUploading] = useState(false);
+  const [uploadError, setUploadError] = useState('');
   const [search, setSearch] = useState('');
 
   useEffect(() => { loadItems(); }, []);
@@ -32,13 +43,22 @@ export default function MediaPage() {
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    setUploadError('');
+    if (!ACCEPTED_TYPES.includes(file.type)) {
+      setUploadError('Unsupported file type. Use JPG, PNG, WebP, GIF, SVG, MP4, or WebM.');
+      e.target.value = '';
+      return;
+    }
     setIsUploading(true);
     try {
       const formData = new FormData();
       formData.append('file', file);
       await mediaApi.upload(formData);
       await loadItems();
-    } catch { alert('Upload failed'); } finally { setIsUploading(false); }
+    } catch (error) { setUploadError(uploadErrorMessage(error)); } finally {
+      setIsUploading(false);
+      e.target.value = '';
+    }
   };
 
   const handleDelete = async (id: string) => {
@@ -58,9 +78,14 @@ export default function MediaPage() {
         <label className="btn-primary cursor-pointer">
           <Upload className="mr-2 h-4 w-4" />
           {isUploading ? 'Uploading...' : 'Upload File'}
-          <input type="file" className="hidden" onChange={handleUpload} accept="image/*,video/*" />
+          <input type="file" className="hidden" onChange={handleUpload} accept={ACCEPTED_TYPES.join(',')} />
         </label>
       </div>
+      {uploadError ? (
+        <p role="alert" className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          {uploadError}
+        </p>
+      ) : null}
       <div className="relative max-w-sm">
         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-surface-500" />
         <input type="text" placeholder="Search files..." value={search} onChange={e => setSearch(e.target.value)} className="input pl-10" />

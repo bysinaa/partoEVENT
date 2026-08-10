@@ -45,10 +45,13 @@ export class ServicesService {
 
   private mapDto(dto: any) {
     const data: any = {};
-    for (const [key, val] of Object.entries(dto)) {
-      if (key === 'icon') { data.iconId = val; continue; }
-      if (key === 'image') { data.coverImageId = val; continue; }
-      data[key] = val;
+    const fields = [
+      'slug', 'titleEn', 'titleFa', 'descriptionEn', 'descriptionFa',
+      'iconId', 'coverImageId', 'order', 'status',
+      'seoTitleEn', 'seoTitleFa', 'seoDescEn', 'seoDescFa',
+    ];
+    for (const field of fields) {
+      if (dto[field] !== undefined) data[field] = dto[field];
     }
     return data;
   }

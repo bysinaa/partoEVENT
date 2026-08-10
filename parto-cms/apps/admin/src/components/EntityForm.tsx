@@ -148,6 +148,7 @@ export interface FormField {
   required?: boolean;
   options?: { label: string; value: string }[];
   span?: 'full' | 'half';
+  nullableNumber?: boolean;
 }
 
 interface EntityFormProps {
@@ -177,7 +178,7 @@ export default function EntityForm({ title, fields, entity, onSubmit, backUrl, i
         } else if (field.type === 'toggle') {
           data[field.name] = val === true || val === 'true';
         } else if (field.type === 'number') {
-          data[field.name] = val ?? 0;
+          data[field.name] = val ?? (field.nullableNumber ? '' : 0);
         } else {
           data[field.name] = val ?? '';
         }
@@ -188,7 +189,7 @@ export default function EntityForm({ title, fields, entity, onSubmit, backUrl, i
       for (const field of fields) {
         if (field.type === 'multiselect') data[field.name] = [];
         else if (field.type === 'toggle') data[field.name] = false;
-        else if (field.type === 'number') data[field.name] = 0;
+        else if (field.type === 'number') data[field.name] = field.nullableNumber ? '' : 0;
         else data[field.name] = '';
       }
       setFormData(data);
@@ -212,6 +213,8 @@ export default function EntityForm({ title, fields, entity, onSubmit, backUrl, i
       } else if (field.type === 'text' || field.type === 'textarea' || field.type === 'richtext') {
         // Keep required fields as-is so the API reports the missing value.
         out[field.name] = value === '' && !field.required ? null : value;
+      } else if (field.type === 'number' && field.nullableNumber) {
+        out[field.name] = value === '' || value === undefined ? null : value;
       } else if (field.type === 'select') {
         out[field.name] = value === '' ? undefined : value;
       } else {
@@ -299,7 +302,7 @@ export default function EntityForm({ title, fields, entity, onSubmit, backUrl, i
               )}
 
               {field.type === 'number' && (
-                <input type="number" value={formData[field.name] ?? 0} onChange={(e) => handleChange(field.name, +e.target.value)}
+                <input type="number" value={formData[field.name] ?? (field.nullableNumber ? '' : 0)} onChange={(e) => handleChange(field.name, e.target.value === '' && field.nullableNumber ? '' : +e.target.value)}
                   placeholder={field.placeholder} required={field.required}
                   className="w-full px-3 py-2 bg-white dark:bg-zinc-800 border border-gray-300 dark:border-zinc-700 rounded-lg text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
               )}
