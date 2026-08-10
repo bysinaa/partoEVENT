@@ -54,6 +54,14 @@ export const postsApi = createCrudApi("posts");
 export const pagesApi = createCrudApi("pages");
 export const projectsApi = createCrudApi("projects");
 
+export const settingsApi = {
+  list: () => api.get("/settings"),
+  getByKey: (key: string) => api.get(`/settings/${key}`),
+  update: (key: string, value: any) => api.put(`/settings/${key}`, { value }),
+  /** Saves the whole settings panel atomically. */
+  updateMany: (values: Record<string, any>) => api.put("/settings/bulk", { values }),
+};
+
 export const mediaApi = {
   list: () => api.get("/media"),
   getById: (id: string) => api.get(`/media/${id}`),

@@ -20,12 +20,12 @@ export default function NotFound() {
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center px-6 text-center">
-      <p className="text-amber-500">{t("code")}</p>
-      <h1 className="mt-4 text-4xl font-bold text-white">{t("title")}</h1>
-      <p className="mt-4 max-w-md text-zinc-400">{t("description")}</p>
+      <p className="text-accent">{t("code")}</p>
+      <h1 className="section-title mt-4">{t("title")}</h1>
+      <p className="section-subtitle mt-4">{t("description")}</p>
       <Link
         href="/"
-        className="mt-8 rounded-xl bg-amber-500 px-6 py-3 font-medium text-black transition hover:bg-amber-400"
+        className="btn-primary mt-8"
       >
         {t("backHome")}
       </Link>

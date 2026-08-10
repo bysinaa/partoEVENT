@@ -10,6 +10,9 @@
     "esModuleInterop": true,
     "module": "esnext",
     "moduleResolution": "bundler",
+    // Test files import with explicit `.ts` extensions so they can be executed
+    // directly by the built-in `node --test` runner. Safe because `noEmit` is on.
+    "allowImportingTsExtensions": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
     "jsx": "react-jsx",

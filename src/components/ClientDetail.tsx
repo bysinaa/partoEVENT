@@ -28,10 +28,10 @@ export default function ClientDetail({ client }: ClientDetailProps) {
             transition={{ duration: 0.8, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
             className="mb-12"
           >
-            <h1 className="text-4xl font-bold text-white md:text-5xl">{name}</h1>
+            <h1 className="section-title">{name}</h1>
 
             {location && (
-              <p className="mt-3 text-sm text-[#6B6E78]">{location}</p>
+              <p className="text-muted mt-3 text-sm">{location}</p>
             )}
 
             {client.website && (
@@ -39,7 +39,7 @@ export default function ClientDetail({ client }: ClientDetailProps) {
                 href={client.website}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="mt-4 inline-flex items-center gap-2 text-sm text-[#FFC54A] transition-colors duration-300 hover:text-[#FFD976]"
+                className="link-accent mt-4 inline-flex items-center gap-2 text-sm"
               >
                 {client.website}
                 <span>&rarr;</span>
@@ -55,14 +55,14 @@ export default function ClientDetail({ client }: ClientDetailProps) {
               transition={{ duration: 0.8, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
               className="mb-12"
             >
-              <h2 className="mb-4 text-lg font-semibold text-[#C6C8CE]">
+              <h2 className="mb-4 text-lg font-semibold">
                 {t("servicesProvided")}
               </h2>
               <div className="flex flex-wrap gap-3">
                 {client.services.map((service) => (
                   <span
                     key={service.id}
-                    className="rounded-full border border-[rgba(0,217,255,0.2)] bg-[rgba(0,217,255,0.06)] px-4 py-2 text-sm text-[#00D9FF]"
+                    className="chip-accent rounded-full px-4 py-2 text-sm"
                   >
                     {service.title}
                   </span>
@@ -79,7 +79,7 @@ export default function ClientDetail({ client }: ClientDetailProps) {
               transition={{ duration: 0.8, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
               className="mb-16 max-w-3xl"
             >
-              <p className="text-[#8B8D96] leading-relaxed">{description}</p>
+              <p className="text-muted leading-relaxed">{description}</p>
             </motion.div>
           )}
         </div>

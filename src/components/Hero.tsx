@@ -32,13 +32,12 @@ export default function Hero({ data }: HeroProps) {
       id="home"
       className="section-glow-hero relative flex min-h-screen items-center overflow-hidden"
     >
-      {/* Cinematic dark overlay for depth */}
-      <div className="absolute inset-0 -z-[5] bg-gradient-to-b from-[#0B0B0F]/40 via-[#0B0B0F]/60 to-[#0B0B0F]" />
-
-      {/* Ambient gold glow orbs */}
-      <div className="glow-orb glow-orb-gold animate-pulse-glow absolute -top-32 left-1/2 h-[500px] w-[800px] -translate-x-1/2 opacity-60" />
-      <div className="glow-orb glow-orb-gold absolute top-1/3 right-0 h-[300px] w-[400px] opacity-30" />
-      <div className="glow-orb glow-orb-gold absolute bottom-0 left-1/4 h-[250px] w-[350px] opacity-20" />
+      {/* Ambient light. The orbs use the theme's --glow, so in light
+          themes they read as warm haze and in dark themes as rays,
+          without the component knowing which theme is active. */}
+      <div className="glow-orb animate-pulse-glow absolute -top-32 left-1/2 h-[500px] w-[800px] max-w-full -translate-x-1/2 opacity-60" />
+      <div className="glow-orb absolute top-1/3 right-0 h-[300px] w-[400px] max-w-full opacity-30" />
+      <div className="glow-orb absolute bottom-0 left-1/4 h-[250px] w-[350px] max-w-full opacity-20" />
 
       <Container>
         <div className="relative z-10 max-w-4xl">
@@ -48,8 +47,8 @@ export default function Hero({ data }: HeroProps) {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
           >
-            <span className="mb-8 inline-flex items-center gap-2 rounded-full border border-[rgba(255,197,74,0.15)] bg-[rgba(255,197,74,0.06)] px-5 py-2 text-sm font-medium text-[#FFC54A] backdrop-blur-px">
-              <span className="inline-block h-1.5 w-1.5 rounded-full bg-[#FFC54A] animate-pulse-glow" />
+            <span className="chip-accent mb-8 inline-flex items-center gap-2 rounded-full px-5 py-2 text-sm font-medium">
+              <span className="dot-accent animate-pulse-glow inline-block h-1.5 w-1.5 rounded-full" />
               {t("badge")}
             </span>
           </motion.div>
@@ -59,7 +58,7 @@ export default function Hero({ data }: HeroProps) {
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.9, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
-            className="mt-8 text-5xl font-bold leading-[1.05] tracking--tight md:text-7xl lg:text-8xl"
+            className="text-hero mt-8"
           >
             <span className="text-gradient-white">{title}</span>
           </motion.h1>
@@ -69,7 +68,7 @@ export default function Hero({ data }: HeroProps) {
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.9, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
-            className="mt-8 max-w-2xl text-lg leading-7 text-[#C6C8CE]"
+            className="section-subtitle mt-8"
           >
             {subtitle}
           </motion.p>
@@ -91,8 +90,9 @@ export default function Hero({ data }: HeroProps) {
         </div>
       </Container>
 
-      {/* Bottom gradient fade */}
-      <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[#0B0B0F] to-transparent" />
+      {/* Bottom fade into the page background, so the hero meets the next
+          section without a hard edge in any theme. */}
+      <div className="scrim-bottom pointer-events-none absolute bottom-0 left-0 right-0 h-32" />
     </section>
   );
 }

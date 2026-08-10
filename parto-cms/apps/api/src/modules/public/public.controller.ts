@@ -2,9 +2,18 @@
 // Public API Controller - No Auth Required
 // ============================================
 
-import { Controller, Get, NotFoundException, Param, Query } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  NotFoundException,
+  Param,
+  Query,
+  UseInterceptors,
+} from '@nestjs/common';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { PrismaService } from '../../prisma/prisma.service';
+import { NoCacheInterceptor } from '../../common/interceptors/no-cache.interceptor';
+import { isPublicSettingKey } from '../entities/settings.contract';
 
 function withMediaUrl<T extends { filename: string }>(media: T | null) {
   if (!media) return null;
@@ -16,6 +25,7 @@ function withMediaUrl<T extends { filename: string }>(media: T | null) {
 
 @ApiTags('Public API')
 @Controller('api/public')
+@UseInterceptors(NoCacheInterceptor)
 export class PublicController {
   constructor(private prisma: PrismaService) {}
 
@@ -234,34 +244,46 @@ export class PublicController {
 
   // ─── Settings ────────────────────────────────
   
+  /**
+   * Only keys on the public allow-list are returned. CMS-only settings (API
+   * keys, internal flags, anything added later) stay private by default rather
+   * than needing to be remembered and excluded.
+   */
   @Get('settings')
-  @ApiOperation({ summary: 'Get all site settings' })
+  @ApiOperation({ summary: 'Get public site settings' })
   async getSettings() {
     const settings = await this.prisma.siteSetting.findMany();
     const result: Record<string, any> = {};
     for (const setting of settings) {
-      try {
-        result[setting.key] = JSON.parse(setting.value);
-      } catch {
-        result[setting.key] = setting.value;
-      }
+      if (!isPublicSettingKey(setting.key)) continue;
+      result[setting.key] = this.parseValue(setting.value);
     }
     return result;
   }
 
   @Get('settings/:key')
-  @ApiOperation({ summary: 'Get setting by key' })
+  @ApiOperation({ summary: 'Get a public setting by key' })
   async getSettingByKey(@Param('key') key: string) {
+    if (!isPublicSettingKey(key)) {
+      // Indistinguishable from a missing key, so this cannot be used to probe
+      // which private settings exist.
+      return null;
+    }
     const setting = await this.prisma.siteSetting.findUnique({
       where: { key },
     });
     if (!setting) {
       return null;
     }
+    return this.parseValue(setting.value);
+  }
+
+  /** Values are stored as strings; JSON ones are decoded, plain ones passed through. */
+  private parseValue(value: string): any {
     try {
-      return JSON.parse(setting.value);
+      return JSON.parse(value);
     } catch {
-      return setting.value;
+      return value;
     }
   }
 

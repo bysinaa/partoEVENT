@@ -144,15 +144,31 @@ function getLocalizedOptional(
   return asOptionalString(record[enField]);
 }
 
-// Fetch wrapper with error handling
+/**
+ * Fetch wrapper with error handling.
+ *
+ * Every public read goes through here, so this is the single place that decides
+ * the caching policy for CMS content.
+ *
+ * `cache: "no-store"` is deliberate: content edited and published in the admin
+ * panel must appear on the website after a plain browser refresh, with no
+ * restart and no waiting for a revalidation window. It also opts the calling
+ * route out of static generation, so listing pages, detail pages, `generateMetadata`
+ * and every locale all read fresh data.
+ *
+ * If this site ever needs CDN/ISR caching, this is the only function to change:
+ * swap in `next: { revalidate: N, tags: [...] }` and invalidate with
+ * `revalidateTag` from a publish webhook.
+ */
 async function fetchCMS<T>(endpoint: string): Promise<T | null> {
   try {
     const res = await fetch(`${CMS_API_URL}${endpoint}`, {
-      next: { revalidate: 60 }, // Cache for 60 seconds
+      cache: "no-store",
     });
     if (!res.ok) {
       if (process.env.NODE_ENV !== "production") {
         console.warn(`CMS API warning: ${res.status} for ${endpoint}`);
+
       }
       return null;
     }

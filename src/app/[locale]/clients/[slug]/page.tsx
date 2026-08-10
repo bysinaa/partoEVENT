@@ -7,30 +7,36 @@ import Navbar from "@/components/Navbar";
 import ClientDetail from "@/components/ClientDetail";
 import Footer from "@/components/Footer";
 import { getSettings, getClientBySlug } from "@/lib/cms/data";
-import { routing } from "@/i18n/routing";
 import type { Locale } from "@/i18n/routing";
 
 type Props = {
   params: Promise<{ locale: string; slug: string }>;
 };
 
-/** Pre-generate a client page for each locale at build time. */
-export function generateStaticParams() {
-  return routing.locales.map((locale) => ({ locale, slug: "placeholder" }));
-}
+/**
+ * Client pages are CMS-driven and their slugs change as content is published,
+ * so they are rendered per-request instead of being prerendered at build time.
+ * The previous `generateStaticParams` only emitted a "placeholder" slug, which
+ * produced no useful prerendered pages anyway.
+ */
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 export async function generateMetadata({
   params,
 }: Omit<Props, "children">): Promise<Metadata> {
   const { locale, slug } = await params;
   const t = await getTranslations({ locale, namespace: "clientDetail" });
-  return { title: `${t("clientPage")} | ${slug}` };
+  const client = await getClientBySlug(locale as Locale, slug);
+
+  // Prefer the real client name; fall back to the slug if the record is missing.
+  return { title: `${t("clientPage")} | ${client?.name ?? slug}` };
 }
 
 export default async function ClientPage({ params }: Props) {
   const { locale, slug } = await params;
 
-  // Enable static rendering for this page.
+  // Make the locale available to next-intl for this request.
   setRequestLocale(locale);
 
   const lang = locale as Locale;

@@ -15,8 +15,8 @@ export default function Team({ members }: TeamProps) {
 
   return (
     <section id="team" className="section-glow-team relative py-32">
-      {/* Ambient purple glow orb */}
-      <div className="glow-orb glow-orb-purple absolute top-0 left-0 h-[400px] w-[500px] opacity-30" />
+      {/* Ambient light, themed via --glow. */}
+      <div className="glow-orb absolute top-0 left-0 h-[400px] w-[500px] max-w-full opacity-30" />
 
       <Container>
         <div className="relative z-10">
@@ -56,21 +56,21 @@ export default function Team({ members }: TeamProps) {
                   className="card-team group"
                 >
                   {/* Portrait photo placeholder */}
-                  <div className="relative mx-auto mt-8 aspect-[3/4] w-40 shrink-0 overflow-hidden rounded-2xl bg-[#1E1F27]">
+                  <div className="media-placeholder relative mx-auto mt-8 aspect-[3/4] w-40 shrink-0 overflow-hidden rounded-2xl">
                     {member.photoId ? (
                       <div className="flex h-full w-full items-center justify-center">
-                        <span className="text-4xl text-[#7E5BFF]">👤</span>
+                        <span className="text-4xl" aria-hidden="true">👤</span>
                       </div>
                     ) : null}
                   </div>
 
                   <div className="p-6 text-center">
-                    <h3 className="text-xl font-semibold text-white">{name}</h3>
+                    <h3 className="text-xl font-semibold">{name}</h3>
 
-                    <p className="mt-1 text-sm font-medium text-[#7E5BFF]">{position}</p>
+                    <p className="text-accent mt-1 text-sm font-medium">{position}</p>
 
                     {biography ? (
-                      <p className="mt-4 text-sm leading-relaxed text-[#6B6E78]">
+                      <p className="text-muted mt-4 text-sm leading-relaxed">
                         {biography}
                       </p>
                     ) : null}
@@ -82,7 +82,7 @@ export default function Team({ members }: TeamProps) {
                             href={member.instagram}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-[#6B6E78] transition-colors duration-300 hover:text-[#7E5BFF]"
+                            className="link-accent"
                           >
                             Instagram
                           </a>
@@ -92,7 +92,7 @@ export default function Team({ members }: TeamProps) {
                             href={member.linkedin}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-[#6B6E78] transition-colors duration-300 hover:text-[#7E5BFF]"
+                            className="link-accent"
                           >
                             LinkedIn
                           </a>

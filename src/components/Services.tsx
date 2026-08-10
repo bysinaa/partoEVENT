@@ -15,8 +15,8 @@ export default function Services({ services }: ServicesProps) {
 
   return (
     <section id="services" className="section-glow-services relative py-32">
-      {/* Ambient cyan glow orb */}
-      <div className="glow-orb glow-orb-cyan absolute top-0 right-1/4 h-[400px] w-[500px] opacity-40" />
+      {/* Ambient light, themed via --glow. */}
+      <div className="glow-orb absolute top-0 right-1/4 h-[400px] w-[500px] max-w-full opacity-40" />
 
       <Container>
         <div className="relative z-10">
@@ -26,7 +26,7 @@ export default function Services({ services }: ServicesProps) {
             viewport={{ once: true }}
             transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
           >
-            <h2 className="section- title text-center">{t("title")}</h2>
+            <h2 className="section-title text-center">{t("title")}</h2>
           </motion.div>
 
           <motion.div
@@ -55,16 +55,16 @@ export default function Services({ services }: ServicesProps) {
                   className="card-service group p-8"
                 >
                   {service.iconId ? (
-                    <div className="mb-5 inline-flex items-center justify-center rounded-xl bg-[rgba(0,217,255,0.06)] p-3 transition-all duration-300 group-hover:bg-[rgba(0,217,255,0.1)]">
-                      <span className="text-3xl text-[#00D9FF]">◆</span>
+                    <div className="surface-muted mb-5 inline-flex items-center justify-center rounded-xl p-3 transition-all duration-300">
+                      <span className="text-accent text-3xl">◆</span>
                     </div>
                   ) : null}
 
-                  <h3 className="mb-4 text-xl font-semibold text-white transition-colors duration-300">
+                  <h3 className="mb-4 text-xl font-semibold">
                     {title ?? t("untitled")}
                   </h3>
 
-                  <p className="leading-relaxed text-[#6B6E78] transition-colors duration-300 group-hover:text-[#C6C8CE]">
+                  <p className="text-muted leading-relaxed">
                     {description}
                   </p>
                 </motion.div>

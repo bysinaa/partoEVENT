@@ -1,49 +1,82 @@
 @import "tailwindcss";
 
 /* ============================================================
-   PARTO — Premium Visual Identity System
-   "Light as an experience, not merely a color"
+   PARTO — Token-driven visual system
+
+   No color is hardcoded below. Every value resolves to a CSS
+   custom property injected per-request from the CMS theme
+   (see src/lib/theme/themes.ts + src/app/[locale]/layout.tsx).
+
+   The :root block here is a *fallback only*, matching the
+   Solar Refined theme, so the stylesheet is still valid if it
+   is ever loaded without the injected theme block.
    ============================================================ */
 
 :root {
-  /* Core palette */
-  --bg-primary: #0B0B0F;
-  --bg-card: #17181E;
-  --bg-card-elevated: #1E1F27;
-  --text-primary: #FFFFFF;
-  --text-secondary: #C6C8CE;
-  --text-muted: #6B6E78;
+  --bg: #fcfaf6;
+  --surface: #ffffff;
+  --surface-muted: #f3eee4;
+  --text-primary: #1e1a15;
+  --text-secondary: #5b5348;
+  --border: #e4dccc;
+  --accent-primary: #a9670c;
+  --accent-secondary: #7a6a50;
+  --button-bg: #1e1a15;
+  --button-text: #fcfaf6;
+  --focus: #a9670c;
+  --glow: rgba(232, 164, 58, 0.28);
+  --gradient-hero: radial-gradient(
+    120% 80% at 50% -10%,
+    rgba(232, 164, 58, 0.2) 0%,
+    rgba(232, 164, 58, 0.06) 38%,
+    rgba(252, 250, 246, 0) 72%
+  );
+  --gradient-accent: linear-gradient(
+    90deg,
+    rgba(169, 103, 12, 0) 0%,
+    rgba(232, 164, 58, 0.65) 50%,
+    rgba(169, 103, 12, 0) 100%
+  );
+  --header-bg: rgba(252, 250, 246, 0.78);
+  --header-border: rgba(30, 26, 21, 0.08);
+  --footer-bg: #f3eee4;
+  --footer-border: rgba(30, 26, 21, 0.1);
 
-  /* Accent — the brand gold (used sparingly) */
-  --accent: #FFC54A;
-  --accent-secondary: #FFD976;
-  --accent-hover: #FF9E1A;
-  --accent-glow: rgba(255, 197, 74, 0.35);
+  /* Typography fallbacks — overridden by the injected block. */
+  --font-heading: "Peyda", system-ui, sans-serif;
+  --font-body: "Peyda", system-ui, sans-serif;
+  --heading-tracking: -0.02em;
+  --heading-leading: 1.08;
+  --heading-weight: 700;
+  --body-leading: 1.75;
+  --body-weight: 400;
+  --eyebrow-tracking: 0.12em;
 
-  /* Section lighting atmospheres */
-  --glow-hero: rgba(255, 197, 74, 0.12);
-  --glow-about: rgba(243, 245, 255, 0.08);
-  --glow-services: rgba(0, 217, 255, 0.08);
-  --glow-projects: rgba(255, 79, 216, 0.07);
-  --glow-team: rgba(126, 91, 255, 0.07);
-  --glow-contact: rgba(101, 255, 155, 0.06);
-
-  /* Borders */
-  --border-subtle: rgba(255, 255, 255, 0.05);
-  --border-hover: rgba(255, 255, 255, 0.10);
-
-  /* Transitions */
-  --ease-premium: cubic-bezier(0.16, 1, 0.3, 1);
+  /* Rhythm — one spacing scale drives every section. */
+  --section-gap: clamp(4rem, 9vw, 8.5rem);
+  --container-pad: clamp(1.25rem, 4vw, 3rem);
+  --radius: 1rem;
+  --radius-lg: 1.5rem;
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 /* ============================================================
-   BASE STYLES
+   FONTS — only the fonts shipped in /public/fonts are loaded.
    ============================================================ */
+
+@font-face {
+  font-family: "Peyda";
+  src: url("/fonts/peyda/peydaWeb-light.woff2") format("woff2");
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
 
 @font-face {
   font-family: "Peyda";
   src: url("/fonts/peyda/Peyda-Regular.woff2") format("woff2");
   font-weight: 400;
+  font-style: normal;
   font-display: swap;
 }
 
@@ -51,6 +84,15 @@
   font-family: "Peyda";
   src: url("/fonts/peyda/Peyda-Medium.woff2") format("woff2");
   font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Peyda";
+  src: url("/fonts/peyda/PeydaWeb-SemiBold.woff2") format("woff2");
+  font-weight: 600;
+  font-style: normal;
   font-display: swap;
 }
 
@@ -58,11 +100,25 @@
   font-family: "Peyda";
   src: url("/fonts/peyda/Peyda-Bold.woff2") format("woff2");
   font-weight: 700;
+  font-style: normal;
   font-display: swap;
 }
 
+@font-face {
+  font-family: "Peyda";
+  src: url("/fonts/peyda/PeydaWeb-ExtraBold.woff2") format("woff2");
+  font-weight: 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* ============================================================
+   BASE
+   ============================================================ */
+
 * {
   box-sizing: border-box;
+  min-width: 0; /* stops flex/grid children from forcing overflow */
 }
 
 html {
@@ -70,6 +126,28 @@ html {
   scroll-padding-top: 6rem;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  /* Belt-and-braces against horizontal overflow at 320px. */
+  overflow-x: hidden;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-weight: var(--body-weight);
+  line-height: var(--body-leading);
+  overflow-x: hidden;
+  transition: background-color 0.3s var(--ease), color 0.3s var(--ease);
+}
+
+img,
+picture,
+video,
+canvas,
+svg {
+  display: block;
+  max-width: 100%;
 }
 
 section[id],
@@ -77,464 +155,533 @@ footer[id] {
   scroll-margin-top: 6rem;
 }
 
-body {
-  background: var(--bg-primary);
-  color: var(--text-primary);
-  font-family: "Peyda", system-ui, -apple-system, sans-serif;
-  overflow-x: hidden;
-}
-
 ::selection {
-  background: rgba(255, 197, 74, 0.3);
-  color: #fff;
+  background: var(--glow);
+  color: var(--text-primary);
 }
 
 /* ============================================================
-   SECTION LIGHTING ATMOSPHERES
-   Each section gets its own ambient glow — like moving through
-   different lighting scenes during a professional stage show.
+   TYPOGRAPHY — fluid, clamped so nothing breaks at 320px.
    ============================================================ */
 
-.section-glow-hero {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-heading);
+  font-weight: var(--heading-weight);
+  letter-spacing: var(--heading-tracking);
+  line-height: var(--heading-leading);
+  color: var(--text-primary);
+  /* `overflow-wrap` keeps long unbroken strings from causing overflow. */
+  overflow-wrap: break-word;
+  margin: 0;
+}
+
+.text-hero {
+  font-size: clamp(2.25rem, 7vw, 5rem);
+}
+
+.section-title {
+  font-size: clamp(1.875rem, 4.5vw, 3.25rem);
+}
+
+.section-subtitle {
+  font-size: clamp(1rem, 1.6vw, 1.175rem);
+  line-height: var(--body-leading);
+  color: var(--text-secondary);
+  max-width: 42rem;
+}
+
+.eyebrow {
+  font-size: clamp(0.7rem, 1.4vw, 0.8rem);
+  font-weight: 600;
+  letter-spacing: var(--eyebrow-tracking);
+  text-transform: uppercase;
+  color: var(--accent-primary);
+}
+
+/* Persian text needs a slightly looser leading to stay readable. */
+[dir="rtl"] body {
+  line-height: calc(var(--body-leading) + 0.1);
+}
+
+/* ============================================================
+   LAYOUT RHYTHM — consistent spacing between every section.
+   ============================================================ */
+
+.section {
+  position: relative;
+  padding-block: var(--section-gap);
+}
+
+.section-muted {
+  background: var(--surface-muted);
+}
+
+/* The ray motif, used as a restrained connector between sections
+   rather than as a decorative separator without purpose. */
+.section-ray {
+  position: relative;
+}
+
+.section-ray::before {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  height: 1px;
+  background: var(--gradient-accent);
+  pointer-events: none;
+}
+
+.divider-glow {
+  height: 1px;
+  border: none;
+  background: var(--gradient-accent);
+  opacity: 0.5;
+}
+
+/* ============================================================
+   SURFACES
+   ============================================================ */
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  transition: transform 0.35s var(--ease), border-color 0.35s var(--ease),
+    box-shadow 0.35s var(--ease);
+}
+
+.card:hover {
+  transform: translateY(-3px);
+  border-color: var(--accent-primary);
+  box-shadow: 0 12px 40px rgb(0 0 0 / 8%);
+}
+
+/* Legacy aliases so pre-existing components inherit the theme
+   without needing a simultaneous rewrite. */
+.card-premium,
+.card-service,
+.card-project,
+.card-team,
+.card-stats {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  transition: transform 0.35s var(--ease), border-color 0.35s var(--ease),
+    box-shadow 0.35s var(--ease);
+}
+
+.card-premium:hover,
+.card-service:hover,
+.card-project:hover,
+.card-team:hover {
+  transform: translateY(-3px);
+  border-color: var(--accent-primary);
+  box-shadow: 0 12px 40px rgb(0 0 0 / 8%);
+}
+
+.tile-client {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 6rem;
+  width: 100%;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  padding: 1rem;
+  text-align: center;
+  color: var(--text-secondary);
+  transition: border-color 0.35s var(--ease), transform 0.35s var(--ease);
+}
+
+.tile-client:hover {
+  border-color: var(--accent-primary);
+  transform: translateY(-2px);
+}
+
+/* ============================================================
+   BUTTONS — min 44px touch target on every breakpoint.
+   ============================================================ */
+
+.btn-primary,
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 2.75rem;
+  padding: 0.75rem 1.75rem;
+  border-radius: 0.75rem;
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 0.9375rem;
+  line-height: 1.2;
+  cursor: pointer;
+  text-decoration: none;
+  transition: transform 0.25s var(--ease), background-color 0.25s var(--ease),
+    border-color 0.25s var(--ease), box-shadow 0.25s var(--ease);
+}
+
+.btn-primary {
+  background: var(--button-bg);
+  color: var(--button-text);
+  border: 1px solid var(--button-bg);
+}
+
+.btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 24px var(--glow);
+}
+
+.btn-secondary {
+  background: transparent;
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+}
+
+.btn-secondary:hover {
+  border-color: var(--accent-primary);
+  color: var(--accent-primary);
+  transform: translateY(-1px);
+}
+
+.btn-primary:active,
+.btn-secondary:active {
+  transform: translateY(0);
+}
+
+/* ============================================================
+   FOCUS — always visible, always themed.
+   ============================================================ */
+
+:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* ============================================================
+   HEADER / FOOTER
+   ============================================================ */
+
+.site-header {
+  background: var(--header-bg);
+  border-bottom: 1px solid var(--header-border);
+  backdrop-filter: blur(16px) saturate(160%);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
+}
+
+.navbar-scrolled {
+  background: var(--header-bg);
+  border-bottom: 1px solid var(--header-border);
+  backdrop-filter: blur(16px) saturate(160%);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
+}
+
+.site-footer {
+  background: var(--footer-bg);
+  border-top: 1px solid var(--footer-border);
+}
+
+/* ============================================================
+   HERO ATMOSPHERE — the single large light gesture.
+   ============================================================ */
+
+.hero-atmosphere {
+  position: relative;
+}
+
+.hero-atmosphere::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--gradient-hero);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Legacy section-glow hooks now resolve to the themed glow. */
+.section-glow-hero,
+.section-glow-about,
+.section-glow-services,
+.section-glow-projects,
+.section-glow-team,
+.section-glow-clients,
+.section-glow-contact {
   position: relative;
 }
 
 .section-glow-hero::before {
   content: "";
   position: absolute;
-  top: -20%;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 120%;
-  height: 80%;
-  background: radial-gradient(ellipse 70% 50% at 50% 0%, var(--glow-hero) 0%, transparent 70%);
-  pointer-events: none;
-  z-index: 0;
-}
-
-.section-glow-about {
-  position: relative;
-}
-
-.section-glow-about::before {
-  content: "";
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 100%;
-  height: 100%;
-  background: radial-gradient(ellipse 60% 40% at 50% 50%, var(--glow-about) 0%, transparent 70%);
-  pointer-events: none;
-  z-index: 0;
-}
-
-.section-glow-services {
-  position: relative;
-}
-
-.section-glow-services::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 120%;
-  height: 100%;
-  background: radial-gradient(ellipse 50% 35% at 50% 20%, var(--glow-services) 0%, transparent 70%);
-  pointer-events: none;
-  z-index: 0;
-}
-
-.section-glow-projects {
-  position: relative;
-}
-
-.section-glow-projects::before {
-  content: "";
-  position: absolute;
-  top: 10%;
-  right: -10%;
-  width: 80%;
-  height: 80%;
-  background: radial-gradient(ellipse 60% 40% at 70% 30%, var(--glow-projects) 0%, transparent 70%);
-  pointer-events: none;
-  z-index: 0;
-}
-
-.section-glow-team {
-  position: relative;
-}
-
-.section-glow-team::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: -10%;
-  width: 80%;
-  height: 100%;
-  background: radial-gradient(ellipse 50% 40% at 30% 30%, var(--glow-team) 0%, transparent 70%);
-  pointer-events: none;
-  z-index: 0;
-}
-
-.section-glow-clients {
-  position: relative;
-}
-
-.section-glow-clients::before {
-  content: "";
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 100%;
-  height: 100%;
-  background: radial-gradient(ellipse 50% 35% at 50% 50%, rgba(255, 255, 255, 0.03) 0%, transparent 70%);
-  pointer-events: none;
-  z-index: 0;
-}
-
-.section-glow-contact {
-  position: relative;
-}
-
-.section-glow-contact::before {
-  content: "";
-  position: absolute;
-  bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 120%;
-  height: 80%;
-  background: radial-gradient(ellipse 50% 40% at 50% 100%, var(--glow-contact) 0%, transparent 70%);
-  pointer-events: none;
-  z-index: 0;
-}
-
-/* ============================================================
-   PREMIUM CARD SYSTEM
-   ============================================================ */
-
-.card-premium {
-  background: var(--bg-card);
-  border: 1px solid var(--border-subtle);
-  border-radius: 1.5rem;
-  transition: all 0.4s var(--ease-premium);
-  position: relative;
-  overflow: hidden;
-}
-
-.card-premium::after {
-  content: "";
-  position: absolute;
   inset: 0;
-  border-radius: inherit;
-  opacity: 0;
-  transition: opacity 0.4s var(--ease-premium);
+  background: var(--gradient-hero);
   pointer-events: none;
-  background: radial-gradient(600px circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(255, 197, 74, 0.06), transparent 40%);
+  z-index: 0;
 }
-
-.card-premium:hover {
-  border-color: rgba(255, 255, 255, 0.08);
-  transform: translateY(-4px);
-}
-
-.card-premium:hover::after {
-  opacity: 1;
-}
-
-/* Service card with cyan glow on hover */
-.card-service {
-  background: var(--bg-card);
-  border: 1px solid var(--border-subtle);
-  border-radius: 1.5rem;
-  transition: all 0.4s var(--ease-premium);
-  position: relative;
-}
-
-.card-service:hover {
-  border-color: rgba(0, 217, 255, 0.2);
-  box-shadow: 0 0 40px rgba(0, 217, 255, 0.05), 0 20px 60px rgba(0, 0, 0, 0.3);
-  transform: translateY(-4px);
-}
-
-/* Project card */
-.card-project {
-  background: var(--bg-card);
-  border: 1px solid var(--border-subtle);
-  border-radius: 1.5rem;
-  transition: all 0.4s var(--ease-premium);
-  overflow: hidden;
-}
-
-.card-project:hover {
-  border-color: rgba(255, 79, 216, 0.2);
-  box-shadow: 0 0 40px rgba(255, 79, 216, 0.04), 0 20px 60px rgba(0, 0, 0, 0.3);
-  transform: translateY(-4px);
-}
-
-/* Team card with purple glow */
-.card-team {
-  background: var(--bg-card);
-  border: 1px solid var(--border-subtle);
-  border-radius: 1.5rem;
-  transition: all 0.4s var(--ease-premium);
-  overflow: hidden;
-}
-
-.card-team:hover {
-  border-color: rgba(126, 91, 255, 0.2);
-  box-shadow: 0 0 40px rgba(126, 91, 255, 0.04), 0 20px 60px rgba(0, 0, 0, 0.3);
-}
-
-/* Client logo tile */
-.tile-client {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 6rem;
-  width: 100%;
-  border-radius: 1rem;
-  border: 1px solid var(--border-subtle);
-  background: var(--bg-card);
-  padding: 1rem;
-  text-align: center;
-  transition: all 0.4s var(--ease-premium);
-  filter: grayscale(0.3) brightness(0.8);
-}
-
-.tile-client:hover {
-  border-color: rgba(255, 255, 255, 0.1);
-  background: var(--bg-card-elevated);
-  filter: grayscale(0) brightness(1);
-  transform: translateY(-2px);
-}
-
-/* Stats card */
-.card-stats {
-  background: var(--bg-card);
-  border: 1px solid var(--border-subtle);
-  border-radius: 1.5rem;
-  transition: all 0.4s var(--ease-premium);
-  position: relative;
-  overflow: hidden;
-}
-
-.card-stats::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 60%;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(255, 197, 74, 0.3), transparent);
-}
-
-/* ============================================================
-   ILLUMINATED BUTTONS
-   Buttons that appear to emit light
-   ============================================================ */
-
-.btn-primary {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  padding: 0.875rem 2rem;
-  border-radius: 0.875rem;
-  font-weight: 500;
-  font-size: 0.9375rem;
-  color: #0B0B0F;
-  background: linear-gradient(135deg, #FFB300 0%, #FFD76A 100%);
-  border: none;
-  cursor: pointer;
-  transition: all 0.35s var(--ease-premium);
-  position: relative;
-  overflow: hidden;
-  box-shadow: 0 0 20px rgba(255, 179, 0, 0.15), 0 4px 16px rgba(255, 179, 0, 0.1);
-}
-
-.btn-primary::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  background: linear-gradient(135deg, transparent 0%, rgba(255, 255, 255, 0.2) 50%, transparent 100%);
-  opacity: 0;
-  transition: opacity 0.35s var(--ease-premium);
-}
-
-.btn-primary:hover {
-  background: linear-gradient(135deg, #FFB300 0%, #FFE38A 100%);
-  box-shadow: 0 0 30px rgba(255, 179, 0, 0.25), 0 8px 32px rgba(255, 179, 0, 0.15);
-  transform: translateY(-1px);
-}
-
-.btn-primary:hover::before {
-  opacity: 1;
-}
-
-.btn-primary:active {
-  transform: translateY(0);
-}
-
-.btn-secondary {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  padding: 0.875rem 2rem;
-  border-radius: 0.875rem;
-  font-weight: 500;
-  font-size: 0.9375rem;
-  color: var(--text-primary);
-  background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  cursor: pointer;
-  transition: all 0.35s var(--ease-premium);
-  backdrop-filter: blur(8px);
-}
-
-.btn-secondary:hover {
-  border-color: rgba(255, 197, 74, 0.3);
-  background: rgba(255, 197, 74, 0.05);
-  box-shadow: 0 0 20px rgba(255, 197, 74, 0.05);
-  transform: translateY(-1px);
-}
-
-.btn-secondary:active {
-  transform: translateY(0);
-}
-
-/* ============================================================
-   NAVBAR
-   ============================================================ */
-
-.navbar-scrolled {
-  background: rgba(11, 11, 15, 0.75);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
-}
-
-/* ============================================================
-   SECTION HEADERS
-   ============================================================ */
-
-.section-title {
-  font-size: 3rem;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  line-height: 1.1;
-  color: var(--text-primary);
-}
-
-@media (min-width: 768px) {
-  .section-title {
-    font-size: 3.5rem;
-  }
-}
-
-.section-subtitle {
-  font-size: 1.125rem;
-  line-height: 1.75;
-  color: var(--text-secondary);
-  max-width: 40rem;
-  margin-left: auto;
-  margin-right: auto;
-}
-
-/* ============================================================
-   GLOW DECORATIONS
-   Ambient light orbs used behind content
-   ============================================================ */
 
 .glow-orb {
   position: absolute;
   border-radius: 50%;
-  filter: blur(100px);
+  background: var(--glow);
+  filter: blur(90px);
   pointer-events: none;
   z-index: 0;
 }
 
-.glow-orb-gold {
-  background: rgba(255, 197, 74, 0.15);
+/* ============================================================
+   TEXT UTILITIES
+   ============================================================ */
+
+.text-gradient-gold,
+.text-gradient-white {
+  color: var(--text-primary);
 }
 
-.glow-orb-cyan {
-  background: rgba(0, 217, 255, 0.12);
+.text-accent {
+  color: var(--accent-primary);
 }
 
-.glow-orb-magenta {
-  background: rgba(255, 79, 216, 0.10);
-}
-
-.glow-orb-purple {
-  background: rgba(126, 91, 255, 0.10);
-}
-
-.glow-orb-emerald {
-  background: rgba(101, 255, 155, 0.08);
+.text-muted {
+  color: var(--text-secondary);
 }
 
 /* ============================================================
-   ICON HOVER SYSTEM
+   COMPONENT SURFACES
+   Classes here exist so Hero/Navbar/Footer and the section
+   components can express intent ("this is a nav pill", "this is
+   an accent chip") without embedding a single literal color.
+   Every value resolves to a theme token, so adding a theme needs
+   no change in this file.
    ============================================================ */
 
-.icon-default {
-  color: #DADADA;
-  transition: color 0.3s var(--ease-premium);
+/* --- Navigation ------------------------------------------- */
+
+.nav-shell {
+  background: transparent;
+  border: 1px solid transparent;
+  transition: background 0.4s var(--ease), border-color 0.4s var(--ease),
+    box-shadow 0.4s var(--ease);
 }
 
-.icon-hover-accent:hover .icon-default,
-.icon-hover-accent:hover {
-  color: var(--accent);
+.nav-shell-scrolled {
+  background: var(--header-bg);
+  border-color: var(--header-border);
+  box-shadow: 0 8px 32px var(--glow);
+  backdrop-filter: blur(16px) saturate(160%);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
+}
+
+/* The hairline under the header, drawn from the accent gradient so
+   it reads as light rather than as a border. */
+.nav-hairline {
+  background: var(--gradient-accent);
+}
+
+.nav-link {
+  color: var(--text-secondary);
+  transition: color 0.3s var(--ease);
+}
+
+.nav-link:hover {
+  color: var(--text-primary);
+}
+
+.nav-link-active {
+  color: var(--text-primary);
+}
+
+/* Pill behind the active/hovered nav item. */
+.nav-pill-active {
+  background: var(--glow);
+}
+
+.nav-pill-hover {
+  background: var(--surface-muted);
+}
+
+.nav-dot {
+  background: var(--gradient-accent);
+}
+
+.nav-icon-button {
+  background: var(--surface-muted);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  transition: background 0.3s var(--ease), border-color 0.3s var(--ease);
+}
+
+.nav-icon-button:hover {
+  border-color: var(--accent-primary);
+}
+
+/* The hamburger bars inherit text color rather than being painted
+   white, so they stay visible in light themes. */
+.nav-bar-line {
+  background: var(--text-primary);
+}
+
+.mobile-overlay {
+  background: var(--bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+.mobile-link {
+  color: var(--text-secondary);
+}
+
+.mobile-link:hover {
+  color: var(--text-primary);
+}
+
+.mobile-link-active {
+  color: var(--accent-primary);
+}
+
+/* --- Chips, badges, logo glow ----------------------------- */
+
+.chip-accent {
+  background: var(--glow);
+  border: 1px solid var(--border);
+  color: var(--accent-primary);
+}
+
+.dot-accent {
+  background: var(--accent-primary);
+}
+
+.logo-glow {
+  background: var(--glow);
+}
+
+/* --- Footer ----------------------------------------------- */
+
+.footer-shell {
+  background: var(--footer-bg);
+  border-top: 1px solid var(--footer-border);
+}
+
+.footer-heading {
+  color: var(--text-primary);
+}
+
+.footer-text {
+  color: var(--text-secondary);
+}
+
+.footer-link {
+  color: var(--text-secondary);
+  transition: color 0.3s var(--ease);
+}
+
+.footer-link:hover {
+  color: var(--accent-primary);
+}
+
+/* --- Generic accent/secondary text ------------------------ */
+
+.text-accent-secondary {
+  color: var(--accent-secondary);
+}
+
+.link-accent {
+  color: var(--accent-primary);
+  transition: color 0.3s var(--ease);
+}
+
+.link-accent:hover {
+  color: var(--accent-secondary);
+}
+
+/* --- Media placeholders ----------------------------------- */
+
+/* Used where a project/team image is absent. A tinted surface is
+   preferable to a hardcoded grey that fights dark themes. */
+.media-placeholder {
+  background: var(--surface-muted);
+  color: var(--text-secondary);
+}
+
+.surface-muted {
+  background: var(--surface-muted);
+}
+
+.border-themed {
+  border-color: var(--border);
+}
+
+/* Overlay used to keep text legible over imagery, expressed as a
+   fade to the page background rather than to a fixed near-black. */
+.scrim-bottom {
+  background: linear-gradient(to top, var(--bg), transparent);
+}
+
+
+/* ============================================================
+   MEDIA — 16:9 everywhere, reserved up front to stop CLS.
+   ============================================================ */
+
+.media-16x9 {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border-radius: var(--radius);
+  background: var(--surface-muted);
+}
+
+.media-16x9 > img,
+.media-16x9 > video {
+  width: 100%;
+  height: 100%;
+  /* Focal point is supplied per-image via --focal-x/--focal-y. */
+  object-fit: cover;
+  object-position: var(--focal-x, 50%) var(--focal-y, 50%);
 }
 
 /* ============================================================
-   PREMIUM ANIMATIONS
+   REVEAL — subtle, and completely disabled for reduced motion.
    ============================================================ */
 
-@keyframes float {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-8px); }
-}
-
-@keyframes pulse-glow {
-  0%, 100% { opacity: 0.4; }
-  50% { opacity: 0.7; }
-}
-
-@keyframes shimmer {
-  0% { background-position: -200% center; }
-  100% { background-position: 200% center; }
-}
-
-@keyframes fade-up {
+@keyframes parto-reveal {
   from {
     opacity: 0;
-    transform: translateY(30px);
+    transform: translateY(16px);
   }
   to {
     opacity: 1;
+    transform: none;
+  }
+}
+
+.reveal {
+  animation: parto-reveal 0.7s var(--ease) both;
+}
+
+@keyframes parto-drift {
+  0%,
+  100% {
     transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
   }
 }
 
 .animate-float {
-  animation: float 6s ease-in-out infinite;
+  animation: parto-drift 8s ease-in-out infinite;
 }
 
 .animate-pulse-glow {
-  animation: pulse-glow 4s ease-in-out infinite;
-}
-
-.animate-shimmer {
-  background-size: 200% auto;
-  animation: shimmer 3s linear infinite;
+  animation: none;
+  opacity: 0.6;
 }
 
 /* ============================================================
@@ -542,60 +689,37 @@ body {
    ============================================================ */
 
 ::-webkit-scrollbar {
-  width: 6px;
+  width: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--bg-primary);
+  background: var(--surface-muted);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 3px;
+  background: var(--border);
+  border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.15);
+  background: var(--accent-primary);
 }
 
 /* ============================================================
-   GRADIENT TEXT UTILITIES
+   REDUCED MOTION — honour the OS preference everywhere.
    ============================================================ */
 
-.text-gradient-gold {
-  background: linear-gradient(135deg, #FFC54A 0%, #FFE38A 50%, #FFC54A 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.text-gradient-white {
-  background: linear-gradient(180deg, #FFFFFF 0%, #C6C8CE 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-/* ============================================================
-   HORIZONTAL DIVIDER WITH GLOW
-   ============================================================ */
-
-.divider-glow {
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.06), transparent);
-  border: none;
-}
-
-/* ============================================================
-   RESPONSIVE UTILITIES
-   ============================================================ */
-
-@media (max-width: 768px) {
-  .section-title {
-    font-size: 2.25rem;
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
   }
 
-  .section-subtitle {
-    font-size: 1rem;
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }

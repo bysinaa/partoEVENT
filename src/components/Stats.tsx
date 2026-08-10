@@ -36,13 +36,13 @@ export default function Stats({ stats }: StatsProps) {
               transition={{ duration: 0.7, delay: index * 0.1, ease: [0.16, 1, 0.3, 1] }}
               className="card-stats group relative overflow-hidden rounded-2xl p-8 text-center"
             >
-              <div className="absolute top-0 left-1/2 h-px w-3/5 -translate-x-1/2 bg-gradient-to-r from-transparent via-[rgba(255,197,74,0.3)] to-transparent" />
+              <div className="nav-hairline absolute top-0 left-1/2 h-px w-3/5 -translate-x-1/2" />
 
-              <div className="text-5xl font-bold tracking-tight text-[#FFC54A] transition-colors duration-300 group-hover:text-[#FFD976]">
+              <div className="link-accent text-5xl font-bold tracking-tight">
                 {item.value}
               </div>
 
-              <p className="mt-3 text-[#C6C8CE]">{item.label}</p>
+              <p className="text-muted mt-3">{item.label}</p>
             </motion.div>
           ))}
         </div>

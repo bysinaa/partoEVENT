@@ -23,10 +23,10 @@ const defaultComponents: Partial<PortableTextReactComponents> = {
       <h3 className="mt-6 text-xl font-semibold">{children}</h3>
     ),
     normal: ({ children }) => (
-      <p className="leading-relaxed text-[#6B6E78]">{children}</p>
+      <p className="text-muted leading-relaxed">{children}</p>
     ),
     blockquote: ({ children }) => (
-      <blockquote className="border-s-4 border-[rgba(255,197,74,0.3)] ps-4 italic text-[#C6C8CE]">
+      <blockquote className="border-themed text-muted border-s-4 ps-4 italic">
         {children}
       </blockquote>
     ),
@@ -38,7 +38,7 @@ const defaultComponents: Partial<PortableTextReactComponents> = {
       return (
         <a
           href={href}
-          className="text-[#FFC54A] underline underline-offset-4 transition-colors duration-300 hover:text-[#FFD976]"
+          className="link-accent underline underline-offset-4"
           {...(isExternal ? { target: "_blank", rel: "noopener noreferrer" } : {})}
         >
           {children}
@@ -48,10 +48,10 @@ const defaultComponents: Partial<PortableTextReactComponents> = {
   },
   list: {
     bullet: ({ children }) => (
-      <ul className="list-disc space-y-2 ps-6 text-[#6B6E78]">{children}</ul>
+      <ul className="text-muted list-disc space-y-2 ps-6">{children}</ul>
     ),
     number: ({ children }) => (
-      <ol className="list-decimal space-y-2 ps-6 text-[#6B6E78]">{children}</ol>
+      <ol className="text-muted list-decimal space-y-2 ps-6">{children}</ol>
     ),
   },
 };

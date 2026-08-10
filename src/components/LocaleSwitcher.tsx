@@ -44,15 +44,15 @@ export default function LocaleSwitcher() {
         defaultValue={locale}
         onChange={(e) => onSwitch(e.target.value as Locale)}
         disabled={isPending}
-        className="cursor-pointer appearance-none rounded-xl border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.03)] py-2 pe-8 ps-3 text-sm text-[#C6C8CE] transition-all duration-300 hover:border-[rgba(255,197,74,0.2)] hover:bg-[rgba(255,197,74,0.03)] focus:border-[rgba(255,197,74,0.3)] focus:outline-none disabled:opacity-50"
+        className="nav-icon-button min-h-11 cursor-pointer appearance-none rounded-xl py-2 pe-8 ps-3 text-sm transition-all duration-300 disabled:opacity-50"
       >
         {routing.locales.map((loc) => (
-          <option key={loc} value={loc} className="bg-[#17181E] text-[#C6C8CE]">
+          <option key={loc} value={loc}>
             {loc === "fa" ? "فارسی" : "English"}
           </option>
         ))}
       </select>
-      <span className="pointer-events-none absolute end-3 text-xs text-[#6B6E78]">
+      <span className="text-muted pointer-events-none absolute end-3 text-xs">
         ▾
       </span>
     </label>

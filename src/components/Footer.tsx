@@ -22,13 +22,15 @@ export default function Footer({ settings }: FooterProps) {
   const instagram = settings?.socialLinks?.instagram;
   const address = settings?.address;
 
-  const footerLinkClass =
-    "text-[#6B6E78] transition-colors duration-300 hover:text-[#FFC54A]";
+  const footerLinkClass = "footer-link";
 
   return (
-    <footer id="contact" className="section-glow-contact relative border-t border-[rgba(255,255,255,0.03)] py-20">
-      {/* Ambient emerald glow orb */}
-      <div className="glow-orb glow-orb-emerald absolute bottom-0 left-1/2 h-[300px] w-[600px] -translate-x-1/2 opacity-30" />
+    <footer
+      id="contact"
+      className="footer-shell section-glow-contact relative py-20"
+    >
+      {/* Ambient light, themed via --glow. */}
+      <div className="glow-orb absolute bottom-0 left-1/2 h-[300px] w-[600px] max-w-full -translate-x-1/2 opacity-30" />
 
       <Container>
         <div className="relative z-10 grid gap-12 md:grid-cols-4">
@@ -38,9 +40,9 @@ export default function Footer({ settings }: FooterProps) {
             viewport={{ once: true }}
             transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
           >
-            <h3 className="text-2xl font-bold text-white">{brand}</h3>
+            <h3 className="footer-heading text-2xl font-bold">{brand}</h3>
 
-            <p className="mt-4 leading-relaxed text-[#6B6E78]">{footerText}</p>
+            <p className="footer-text mt-4 leading-relaxed">{footerText}</p>
           </motion.div>
 
           <motion.div
@@ -49,7 +51,7 @@ export default function Footer({ settings }: FooterProps) {
             viewport={{ once: true }}
             transition={{ duration: 0.7, delay: 0.08, ease: [0.16, 1, 0.3, 1] }}
           >
-            <h4 className="mb-5 text-sm font-semibold uppercase tracking-wider text-[#C6C8CE]">{t("pagesTitle")}</h4>
+            <h4 className="eyebrow mb-5">{t("pagesTitle")}</h4>
 
             <ul className="space-y-3 text-sm">
               <li>
@@ -86,7 +88,7 @@ export default function Footer({ settings }: FooterProps) {
             viewport={{ once: true }}
             transition={{ duration: 0.7, delay: 0.16, ease: [0.16, 1, 0.3, 1] }}
           >
-            <h4 className="mb-5 text-sm font-semibold uppercase tracking-wider text-[#C6C8CE]">{t("contactTitle")}</h4>
+            <h4 className="eyebrow mb-5">{t("contactTitle")}</h4>
 
             <ul className="space-y-3 text-sm">
               {phone ? (
@@ -124,9 +126,9 @@ export default function Footer({ settings }: FooterProps) {
             viewport={{ once: true }}
             transition={{ duration: 0.7, delay: 0.24, ease: [0.16, 1, 0.3, 1] }}
           >
-            <h4 className="mb-5 text-sm font-semibold uppercase tracking-wider text-[#C6C8CE]">{t("addressTitle")}</h4>
+            <h4 className="eyebrow mb-5">{t("addressTitle")}</h4>
 
-            <ul className="space-y-3 text-sm text-[#6B6E78]">
+            <ul className="footer-text space-y-3 text-sm">
               {address ? <li>{address}</li> : null}
             </ul>
           </motion.div>
@@ -134,7 +136,7 @@ export default function Footer({ settings }: FooterProps) {
 
         <div className="divider-glow mt-12" />
 
-        <div className="mt-8 text-center text-sm text-[#6B6E78]">
+        <div className="footer-text mt-8 text-center text-sm">
           {t("rights", { brand })}
         </div>
       </Container>

@@ -6,17 +6,19 @@ import Navbar from "@/components/Navbar";
 import Team from "@/components/Team";
 import Footer from "@/components/Footer";
 import { getSettings, getTeamMembers } from "@/lib/cms/data";
-import { routing } from "@/i18n/routing";
 import type { Locale } from "@/i18n/routing";
 
 type Props = {
   params: Promise<{ locale: string }>;
 };
 
-/** Pre-generate a team page for each locale at build time. */
-export function generateStaticParams() {
-  return routing.locales.map((locale) => ({ locale }));
-}
+/**
+ * Team members are CMS-driven, so this page must reflect the latest published
+ * state on every request. It is therefore rendered per-request rather than
+ * prerendered at build time (which is also why there is no `generateStaticParams`).
+ */
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 export async function generateMetadata({
   params,
@@ -29,7 +31,7 @@ export async function generateMetadata({
 export default async function TeamPage({ params }: Props) {
   const { locale } = await params;
 
-  // Enable static rendering for this page.
+  // Make the locale available to next-intl for this request.
   setRequestLocale(locale);
 
   const lang = locale as Locale;

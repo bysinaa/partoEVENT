@@ -33,27 +33,27 @@ export default function Clients({ clients, settings }: ClientsProps) {
             <Link
               key={client.id}
               href={`/clients/${client.slug}`}
-              className="group rounded-3xl border border-white/10 bg-white/[0.03] p-6 transition hover:border-[#FF4FD8]/40 hover:bg-white/[0.06]"
+              className="card group p-6"
             >
-              <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-[#FF4FD8]/20 to-[#FFC54A]/20 text-2xl font-bold text-white">
+              <div className="surface-muted text-accent flex h-20 w-20 items-center justify-center rounded-2xl text-2xl font-bold">
                 {client.name.slice(0, 2).toUpperCase()}
               </div>
 
-              <h3 className="mt-6 text-xl font-semibold text-white">
+              <h3 className="mt-6 text-xl font-semibold">
                 {client.name}
               </h3>
 
               {client.description ? (
-                <p className="mt-3 line-clamp-3 text-sm leading-6 text-[#8A8D97]">
+                <p className="text-muted mt-3 line-clamp-3 text-sm leading-6">
                   {client.description}
                 </p>
               ) : null}
 
               {client.location ? (
-                <p className="mt-4 text-sm text-[#FFC54A]">{client.location}</p>
+                <p className="text-accent mt-4 text-sm">{client.location}</p>
               ) : null}
 
-              <div className="mt-6 text-sm text-[#6B6E78] transition group-hover:text-white">
+              <div className="text-muted mt-6 text-sm">
                 {t("viewClient")} <span aria-hidden="true">&larr;</span>
               </div>
             </Link>

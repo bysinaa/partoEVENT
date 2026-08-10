@@ -20,11 +20,19 @@ type Props = {
   params: Promise<{ locale: string }>;
 };
 
+/**
+ * CMS-driven content must reflect the latest published state on every request,
+ * so this route is never prerendered or served from the full route cache.
+ */
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export default async function HomePage({ params }: Props) {
   const { locale } = await params;
 
-  // Enable static rendering for this page.
+  // Make the locale available to next-intl for this request.
   setRequestLocale(locale);
+
 
   const lang = locale as Locale;
 

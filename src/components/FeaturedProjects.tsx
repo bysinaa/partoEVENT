@@ -15,7 +15,7 @@ export default function FeaturedProjects({ projects }: FeaturedProjectsProps) {
 
   return (
     <section id="projects" className="section-glow-projects relative py-32">
-      <div className="glow-orb glow-orb-magenta absolute top-1/4 right-0 h-[350px] w-[450px] opacity-30" />
+      <div className="glow-orb absolute top-1/4 right-0 h-[350px] w-[450px] max-w-full opacity-30" />
 
       <Container>
         <div className="relative z-10">
@@ -49,29 +49,29 @@ export default function FeaturedProjects({ projects }: FeaturedProjectsProps) {
                   }}
                   className="card-project group"
                 >
-                  <div className="relative flex h-56 items-center justify-center overflow-hidden bg-gradient-to-br from-[#1E1F27] via-[#252733] to-[#17181E]">
-                    <div className="absolute inset-0 bg-gradient-to-t from-[#17181E] via-transparent to-transparent opacity-60" />
-                    <div className="relative z-10 px-6 text-center text-5xl font-black text-white/10">
+                  <div className="media-placeholder media-16x9 relative flex items-center justify-center overflow-hidden">
+                    <div className="scrim-bottom pointer-events-none absolute inset-0 opacity-60" />
+                    <div className="relative z-10 px-6 text-center text-5xl font-black opacity-20">
                       {title.slice(0, 2).toUpperCase()}
                     </div>
                   </div>
 
                   <div className="p-6">
-                    <p className="text-sm font-medium text-[#FF4FD8]">
+                    <p className="text-accent text-sm font-medium">
                       {categoryTitle}
                     </p>
 
-                    <h3 className="mt-2 text-xl font-semibold text-white transition-colors duration-300">
+                    <h3 className="mt-2 text-xl font-semibold">
                       {title}
                     </h3>
 
                     {project.description ? (
-                      <p className="mt-3 line-clamp-2 text-sm text-[#8A8D97]">
+                      <p className="text-muted mt-3 line-clamp-2 text-sm">
                         {project.description}
                       </p>
                     ) : null}
 
-                    <div className="mt-6 inline-flex items-center gap-2 text-sm text-[#6B6E78] transition-colors duration-300 group-hover:text-[#C6C8CE]">
+                    <div className="text-muted mt-6 inline-flex items-center gap-2 text-sm">
                       {t("viewProject")}
                       <span className="transition-transform duration-300 group-hover:translate-x-1">
                         &larr;

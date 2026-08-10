@@ -94,21 +94,17 @@ export default function Navbar({ settings }: NavbarProps) {
             : "py-4"
         }`}
       >
-        {/* Outer glow line on scroll */}
+        {/* Ray hairline, drawn only once the header lifts off the hero. */}
         <div
           className={`absolute bottom-0 left-0 h-px transition-all duration-700 ${
-            scrolled
-              ? "right-0 bg-gradient-to-r from-transparent via-[rgba(255,197,74,0.3)] to-transparent"
-              : "right-1/2 left-1/2 bg-transparent"
+            scrolled ? "nav-hairline right-0" : "right-1/2 left-1/2 bg-transparent"
           }`}
         />
 
         {/* Glass container */}
         <div
-          className={`mx-4 rounded-2xl transition-all duration-500 md:mx-6 lg:mx-auto lg:max-w-7xl ${
-            scrolled
-              ? "border border-[rgba(255,255,255,0.06)] bg-[rgba(11,11,15,0.8)] shadow-[0_8px_32px_rgba(0,0,0,0.4),0_0_0_1px_rgba(255,255,255,0.02)] backdrop-blur-xl"
-              : "bg-transparent border border-transparent"
+          className={`nav-shell mx-4 rounded-2xl md:mx-6 lg:mx-auto lg:max-w-7xl ${
+            scrolled ? "nav-shell-scrolled" : ""
           }`}
         >
           <Container>
@@ -125,7 +121,7 @@ export default function Navbar({ settings }: NavbarProps) {
                       className="h-9 w-auto transition-all duration-300 group-hover:scale-110"
                     />
                     {/* Subtle glow behind logo */}
-                    <div className="absolute -inset-2 rounded-full bg-[rgba(255,197,74,0.15)] opacity-0 blur-lg transition-opacity duration-500 group-hover:opacity-100" />
+                    <div className="logo-glow absolute -inset-2 rounded-full opacity-0 blur-lg transition-opacity duration-500 group-hover:opacity-100" />
                   </div>
                 ) : (
                   <span className="text-gradient-gold text-xl font-bold">{companyName}</span>
@@ -145,10 +141,8 @@ export default function Navbar({ settings }: NavbarProps) {
                           href={item.href}
                           onMouseEnter={() => setHoveredItem(item.id)}
                           onMouseLeave={() => setHoveredItem(null)}
-                          className={`relative z-10 block rounded-xl px-4 py-2 text-sm transition-all duration-300 ${
-                            isActive
-                              ? "text-white"
-                              : "text-[#8B8D96] hover:text-[#DADADA]"
+                          className={`nav-link relative z-10 block rounded-xl px-4 py-2 text-sm ${
+                            isActive ? "nav-link-active" : ""
                           }`}
                         >
                           {t(item.labelKey)}
@@ -158,10 +152,8 @@ export default function Navbar({ settings }: NavbarProps) {
                           href={getSectionHref(item.id)}
                           onMouseEnter={() => setHoveredItem(item.id)}
                           onMouseLeave={() => setHoveredItem(null)}
-                          className={`relative z-10 block rounded-xl px-4 py-2 text-sm transition-all duration-300 ${
-                            isActive
-                              ? "text-white"
-                              : "text-[#8B8D96] hover:text-[#DADADA]"
+                          className={`nav-link relative z-10 block rounded-xl px-4 py-2 text-sm ${
+                            isActive ? "nav-link-active" : ""
                           }`}
                         >
                           {t(item.labelKey)}
@@ -172,9 +164,7 @@ export default function Navbar({ settings }: NavbarProps) {
                       {(isActive || isHovered) && (
                         <div
                           className={`absolute inset-0 rounded-xl transition-all duration-300 ${
-                            isActive
-                              ? "bg-[rgba(255,197,74,0.12)] shadow-[0_0_20px_rgba(255,197,74,0.08)]"
-                              : "bg-[rgba(255,255,255,0.04)]"
+                            isActive ? "nav-pill-active" : "nav-pill-hover"
                           }`}
                           style={{ zIndex: 0 }}
                         />
@@ -182,7 +172,7 @@ export default function Navbar({ settings }: NavbarProps) {
 
                       {/* Active dot */}
                       {isActive && (
-                        <div className="absolute -bottom-1 left-1/2 h-0.5 w-4 -translate-x-1/2 rounded-full bg-gradient-to-r from-[#FFB300] to-[#FFD76A] shadow-[0_0_8px_rgba(255,197,74,0.5)]" />
+                        <div className="nav-dot absolute -bottom-1 left-1/2 h-0.5 w-4 -translate-x-1/2 rounded-full" />
                       )}
                     </li>
                   );
@@ -192,32 +182,31 @@ export default function Navbar({ settings }: NavbarProps) {
               {/* Right side */}
               <div className="flex items-center gap-2">
                 <LocaleSwitcher />
-                <Link
-                  href="/#contact"
-                  className="relative hidden overflow-hidden rounded-xl bg-gradient-to-r from-[#FFB300] to-[#FFD76A] px-5 py-2.5 text-sm font-semibold text-[#0B0B0F] shadow-[0_0_20px_rgba(255,179,0,0.3)] transition-all duration-300 hover:shadow-[0_0_30px_rgba(255,179,0,0.5)] hover:brightness-110 md:block"
-                >
+                <Link href="/#contact" className="btn-primary hidden md:inline-flex">
                   {t("cta")}
                 </Link>
 
                 {/* Mobile menu button */}
                 <button
                   onClick={() => setMobileOpen(!mobileOpen)}
-                  className="relative flex h-10 w-10 items-center justify-center rounded-xl border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.03)] transition-all duration-300 hover:bg-[rgba(255,255,255,0.06)] md:hidden"
+                  className="nav-icon-button relative flex h-11 w-11 items-center justify-center rounded-xl md:hidden"
                   aria-label={mobileOpen ? "Close menu" : "Open menu"}
+                  aria-expanded={mobileOpen}
+                  aria-controls="mobile-menu"
                 >
                   <div className="flex flex-col gap-1.5">
                     <span
-                      className={`block h-px w-5 bg-white transition-all duration-300 ${
+                      className={`nav-bar-line block h-px w-5 transition-all duration-300 ${
                         mobileOpen ? "translate-y-[3.5px] rotate-45" : ""
                       }`}
                     />
                     <span
-                      className={`block h-px w-5 bg-white transition-all duration-300 ${
+                      className={`nav-bar-line block h-px w-5 transition-all duration-300 ${
                         mobileOpen ? "opacity-0" : ""
                       }`}
                     />
                     <span
-                      className={`block h-px w-5 bg-white transition-all duration-300 ${
+                      className={`nav-bar-line block h-px w-5 transition-all duration-300 ${
                         mobileOpen ? "-translate-y-[3.5px] -rotate-45" : ""
                       }`}
                     />
@@ -231,10 +220,9 @@ export default function Navbar({ settings }: NavbarProps) {
 
       {/* Mobile overlay */}
       <div
+        id="mobile-menu"
         className={`fixed inset-0 z-40 transition-all duration-500 md:hidden ${
-          mobileOpen
-            ? "bg-[rgba(11,11,15,0.9)] backdrop-blur-xl opacity-100"
-            : "pointer-events-none opacity-0"
+          mobileOpen ? "mobile-overlay opacity-100" : "pointer-events-none opacity-0"
         }`}
         onClick={() => setMobileOpen(false)}
       >
@@ -251,10 +239,8 @@ export default function Navbar({ settings }: NavbarProps) {
                 key={item.id}
                 href={item.href}
                 onClick={() => setMobileOpen(false)}
-                className={`text-2xl font-medium transition-all duration-300 ${
-                  isActive
-                    ? "text-[#FFC54A] drop-shadow-[0_0_12px_rgba(255,197,74,0.4)]"
-                    : "text-[#C6C8CE] hover:text-white"
+                className={`mobile-link py-2 text-2xl font-medium transition-all duration-300 ${
+                  isActive ? "mobile-link-active" : ""
                 }`}
                 style={{ transitionDelay: mobileOpen ? `${index * 50}ms` : "0ms" }}
               >
@@ -265,10 +251,8 @@ export default function Navbar({ settings }: NavbarProps) {
                 key={item.id}
                 href={getSectionHref(item.id)}
                 onClick={() => setMobileOpen(false)}
-                className={`text-2xl font-medium transition-all duration-300 ${
-                  isActive
-                    ? "text-[#FFC54A] drop-shadow-[0_0_12px_rgba(255,197,74,0.4)]"
-                    : "text-[#C6C8CE] hover:text-white"
+                className={`mobile-link py-2 text-2xl font-medium transition-all duration-300 ${
+                  isActive ? "mobile-link-active" : ""
                 }`}
                 style={{ transitionDelay: mobileOpen ? `${index * 50}ms` : "0ms" }}
               >
@@ -281,7 +265,7 @@ export default function Navbar({ settings }: NavbarProps) {
           <Link
             href="/#contact"
             onClick={() => setMobileOpen(false)}
-            className="mt-4 rounded-xl bg-gradient-to-r from-[#FFB300] to-[#FFD76A] px-8 py-3 text-base font-semibold text-[#0B0B0F] shadow-[0_0_30px_rgba(255,179,0,0.4)]"
+            className="btn-primary mt-4"
             style={{ transitionDelay: mobileOpen ? `${SECTIONS.length * 50}ms` : "0ms" }}
           >
             {t("cta")}
