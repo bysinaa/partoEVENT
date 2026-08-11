@@ -17,9 +17,11 @@ fail() {
 [ "$(id -u)" -eq 0 ] || fail "Run this installer with sudo."
 [ -n "$SITE_DOMAIN" ] || fail "Usage: sudo sh -s -- example.com admin@example.com"
 [ -n "$ACME_EMAIL" ] || fail "An ACME email is required."
-case "$SITE_DOMAIN $ADMIN_DOMAIN $API_DOMAIN" in
-  *://*|*/*|*' '*) fail "Use domain names only, without https:// or paths." ;;
-esac
+for domain in "$SITE_DOMAIN" "$ADMIN_DOMAIN" "$API_DOMAIN"; do
+  case "$domain" in
+    *://*|*/*|*' '*) fail "Use domain names only, without https:// or paths." ;;
+  esac
+done
 
 . /etc/os-release
 case "$ID" in
