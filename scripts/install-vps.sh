@@ -45,6 +45,17 @@ if ! docker compose version >/dev/null 2>&1; then
 fi
 systemctl enable --now docker
 
+MEMORY_KB=$(awk '/MemTotal/ { print $2 }' /proc/meminfo)
+if [ "$MEMORY_KB" -lt 2000000 ] && [ "$(wc -l < /proc/swaps)" -eq 1 ]; then
+  AVAILABLE_KB=$(df -Pk / | awk 'NR == 2 { print $4 }')
+  [ "$AVAILABLE_KB" -gt 3145728 ] || fail "At least 3 GB of free disk is required to add build swap."
+  fallocate -l 2G /swapfile
+  chmod 600 /swapfile
+  mkswap /swapfile >/dev/null
+  swapon /swapfile
+  grep -q '^/swapfile ' /etc/fstab || echo '/swapfile none swap sw 0 0' >> /etc/fstab
+fi
+
 if command -v ufw >/dev/null 2>&1; then
   ufw allow 80/tcp
   ufw allow 443/tcp
@@ -104,7 +115,9 @@ fi
 
 COMPOSE="docker compose --env-file .env.production -f compose.production.yml"
 $COMPOSE config --quiet
-$COMPOSE build --pull
+for service in website admin api; do
+  $COMPOSE build --pull "$service"
+done
 $COMPOSE up -d --remove-orphans
 
 i=0
