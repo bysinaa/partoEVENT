@@ -14,6 +14,12 @@ if grep -Eq 'example\.com|replace-with-' .env.production; then
   exit 1
 fi
 docker compose --env-file .env.production -f compose.production.yml config --quiet
-docker compose --env-file .env.production -f compose.production.yml build --pull
-docker compose --env-file .env.production -f compose.production.yml up -d --remove-orphans
-docker compose --env-file .env.production -f compose.production.yml ps
+COMPOSE="docker compose --env-file .env.production -f compose.production.yml"
+for service in website admin api; do
+  $COMPOSE build --pull "$service"
+done
+$COMPOSE up -d --remove-orphans
+$COMPOSE ps
+
+AVAILABLE_KB=$(df -Pk / | awk 'NR == 2 { print $4 }')
+[ "$AVAILABLE_KB" -ge 3145728 ] || docker builder prune -af >/dev/null

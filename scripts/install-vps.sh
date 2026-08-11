@@ -129,6 +129,9 @@ done
 
 $COMPOSE exec -T api npm run db:seed:prod
 $COMPOSE ps
+
+AVAILABLE_KB=$(df -Pk / | awk 'NR == 2 { print $4 }')
+[ "$AVAILABLE_KB" -ge 3145728 ] || docker builder prune -af >/dev/null
 echo
 echo "Installed: https://$SITE_DOMAIN"
 echo "CMS:       https://$ADMIN_DOMAIN"
