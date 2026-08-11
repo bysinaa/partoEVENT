@@ -99,10 +99,9 @@ npm run db:seed
 npm run db:studio
 ```
 
-This repository currently has no Prisma migration history, so local setup uses
-`prisma db push`. Establish an initial migration before the first production
-deployment, then use `prisma migrate deploy` for releases. Prisma Client is
-generated code; regenerate it with `npm run db:generate` from
+Local setup may use `prisma db push`. Production includes a tracked initial
+migration and the API container runs `prisma migrate deploy` before startup.
+Prisma Client is generated code; regenerate it with `npm run db:generate` from
 `parto-cms/apps/api` and do not edit generated output manually.
 
 ## Content flow
@@ -164,6 +163,10 @@ git status --short
 
 ## Production notes
 
+راهنمای کامل deploy از Git روی VPS لینوکس در
+[`docs/DEPLOY-VPS.md`](docs/DEPLOY-VPS.md) قرار دارد. فایل production آماده شامل
+`compose.production.yml`، Caddy با HTTPS خودکار و سه Docker image مستقل است.
+
 - Store database, JWT, seed-user, and object-storage secrets in the deployment
   environment; example values are local placeholders only.
 - Set `ADMIN_URL` to the deployed Admin origin and
@@ -172,3 +175,8 @@ git status --short
 - Persist or externalize `apps/api/uploads`; deleting the API filesystem removes
   locally stored media.
 - Put rate limiting and normal edge protections in front of the public API.
+
+Production is deployed with `compose.production.yml`: PostgreSQL and uploads
+use named volumes, only Caddy exposes host ports, and Caddy provisions HTTPS for
+the Website, Admin, and API domains. See the VPS guide before the first deploy.
+The guide also provides a one-command Ubuntu/Debian installer.

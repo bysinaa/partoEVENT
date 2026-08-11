@@ -26,12 +26,12 @@ async function bootstrap() {
   app.use('/uploads', express.static(uploadsDir));
 
   // CORS
+  const production = process.env.NODE_ENV === 'production';
+  const allowedOrigins = [process.env.ADMIN_URL, process.env.WEBSITE_URL];
+  if (!production) allowedOrigins.push('http://localhost:3003', 'http://localhost:3000');
+
   app.enableCors({
-    origin: [
-      process.env.ADMIN_URL || 'http://localhost:3000',
-      'http://localhost:3003',
-      'http://localhost:3000',
-    ],
+    origin: allowedOrigins.filter((origin): origin is string => Boolean(origin)),
     credentials: true,
   });
 
@@ -74,7 +74,7 @@ async function bootstrap() {
   SwaggerModule.setup('docs', app, document);
 
   const port = process.env.API_PORT || 3006;
-  await app.listen(port);
+  await app.listen(port, '0.0.0.0');
 
   console.log(`🚀 Parto CMS API running on http://localhost:${port}`);
   console.log(`📚 API docs at http://localhost:${port}/docs`);

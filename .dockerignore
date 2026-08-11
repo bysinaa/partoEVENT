@@ -1,0 +1,16 @@
+.git
+.github
+**/node_modules
+**/.next
+**/dist
+**/.turbo
+**/coverage
+**/*.log
+**/*.tsbuildinfo
+**/.env
+**/.env.*
+!**/.env.example
+parto-cms/apps/api/uploads
+parto-ems
+parto-oms
+_*.log

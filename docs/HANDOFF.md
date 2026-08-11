@@ -53,6 +53,10 @@ Canonical decisions:
   least 32 characters.
 - Final E2E uses the existing Nest app, native `fetch`, and the real local
   PostgreSQL schema; no E2E framework dependency was added.
+- Production deployment uses three multi-stage Node 22 images, PostgreSQL 16,
+  and Caddy as the only public entry point with automatic HTTPS.
+- A tracked initial Prisma migration supports fresh VPS databases; API startup
+  applies pending migrations before starting Nest.
 - The smoke creates a unique authenticated user, Media, Client, Project, and
   Settings change; it updates/publishes content, verifies public responses and
   website mappers, then cleans up.
@@ -73,13 +77,20 @@ Canonical decisions:
 - `npx prisma validate`: `PASS`.
 - `npx prisma generate`: `PASS` (Prisma Client 6.19.3).
 - `git diff --check`: `PASS`.
+- Website/Admin/API Docker image builds: `PASS`.
+- Fresh isolated production stack: `PASS` â€” initial migration applied,
+  PostgreSQL/API healthy, Website and Admin returned HTML, public API and seeded
+  Admin login returned HTTP 200.
+- Production dependency audits (Website and CMS): `PASS` â€” 0 vulnerabilities.
+- `docker compose ... config --quiet`: `PASS`.
 
 ## Intentional limitations / non-critical work
 
-- No Prisma migration history exists. Local setup uses `db push`; create an
-  initial migration before the first production deployment.
+- Fresh databases are supported by the tracked initial migration. A database
+  previously created with `prisma db push` must be backed up and baselined with
+  `prisma migrate resolve` before connecting this deployment.
 - Media storage is the API's local `uploads` directory. Production must provide
-  persistent storage or migrate it to object storage.
+  the named `api_uploads` volume (included) or migrate it to object storage.
 - The public read API is intentionally unauthenticated and has no application
   rate limiter; deploy it behind normal edge rate limiting/protection.
 - CMS reads intentionally use `no-store` for reliable freshness. Add targeted

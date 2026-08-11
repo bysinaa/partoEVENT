@@ -19,7 +19,6 @@ build/
 .env.*.local
 
 # Prisma
-apps/api/prisma/migrations/
 apps/api/generated/prisma/*.tmp*
 
 # IDE

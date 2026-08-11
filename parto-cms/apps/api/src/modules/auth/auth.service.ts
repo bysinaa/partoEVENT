@@ -10,7 +10,7 @@ import {
   ForbiddenException,
   BadRequestException,
 } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
+import { JwtService, type JwtSignOptions } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcryptjs';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -383,11 +383,11 @@ export class AuthService {
   private async generateTokens(payload: JwtPayload): Promise<TokenPair> {
     const [accessToken, refreshToken] = await Promise.all([
       this.jwtService.signAsync(payload, {
-        expiresIn: this.config.get<string>('JWT_EXPIRES_IN', '15m'),
+        expiresIn: this.config.get<string>('JWT_EXPIRES_IN', '15m') as JwtSignOptions['expiresIn'],
       }),
       this.jwtService.signAsync(payload, {
-        secret: this.config.get<string>('JWT_REFRESH_SECRET'),
-        expiresIn: this.config.get<string>('JWT_REFRESH_EXPIRES_IN', '7d'),
+        secret: this.config.getOrThrow<string>('JWT_REFRESH_SECRET'),
+        expiresIn: this.config.get<string>('JWT_REFRESH_EXPIRES_IN', '7d') as JwtSignOptions['expiresIn'],
       }),
     ]);
 

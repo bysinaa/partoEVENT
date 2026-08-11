@@ -1,52 +1,36 @@
-# ============================================
-# Parto CMS API — Multi-stage Docker Build
-# ============================================
-
-# Stage 1: Build
-FROM node:20-alpine AS builder
-
+FROM node:22-alpine AS dependencies
 WORKDIR /app
-
-# Install dependencies
-COPY package.json package-lock.json* ./
+COPY parto-cms/package.json parto-cms/package-lock.json ./
+COPY parto-cms/apps/admin/package.json ./apps/admin/package.json
+COPY parto-cms/apps/api/package.json ./apps/api/package.json
 RUN npm ci
 
-# Copy source
-COPY . .
-
-# Generate Prisma client
-RUN npx prisma generate
-
-# Build NestJS
-RUN npm run build
-
-# Stage 2: Production
-FROM node:20-alpine AS production
-
+FROM dependencies AS builder
 WORKDIR /app
+COPY parto-cms ./
+WORKDIR /app/apps/api
+RUN npx prisma generate && npm run build
 
-# Install tini for proper signal handling
-RUN apk add --no-cache tini
-
-# Copy package files
-COPY package.json package-lock.json* ./
+FROM node:22-alpine AS production-dependencies
+WORKDIR /app
+COPY parto-cms/package.json parto-cms/package-lock.json ./
+COPY parto-cms/apps/admin/package.json ./apps/admin/package.json
+COPY parto-cms/apps/api/package.json ./apps/api/package.json
 RUN npm ci --omit=dev
 
-# Copy built application
-COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
-COPY --from=builder /app/prisma ./prisma
-
-# Generate Prisma client for production
-RUN npx prisma generate
-
-# Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD wget -qO- http://localhost:3001/api/v1/health || exit 1
-
-# Expose port
-EXPOSE 3001
-
-# Run with tini
-ENTRYPOINT ["/sbin/tini", "--"]
-CMD ["node", "dist/main"]
+FROM node:22-alpine AS runtime
+WORKDIR /app/apps/api
+ENV NODE_ENV=production \
+    API_PORT=3006
+COPY --from=production-dependencies /app/node_modules /app/node_modules
+COPY --from=production-dependencies /app/apps/api/node_modules ./node_modules
+COPY --from=production-dependencies /app/apps/api/package.json ./package.json
+COPY --from=builder /app/apps/api/dist ./dist
+COPY --from=builder /app/apps/api/generated ./generated
+COPY --from=builder /app/apps/api/prisma ./prisma
+RUN mkdir -p uploads && chown -R node:node /app/apps/api
+USER node
+EXPOSE 3006
+HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=5 \
+  CMD wget -qO- http://127.0.0.1:3006/api/v1/api/public/settings >/dev/null || exit 1
+CMD ["sh", "-c", "../../node_modules/.bin/prisma migrate deploy && exec node dist/main.js"]
