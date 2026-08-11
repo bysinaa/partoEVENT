@@ -6,7 +6,7 @@
 Ubuntu/Debian اجرا کنید و دامنه و ایمیل واقعی خودتان را جایگزین کنید:
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/bysinaa/partoEVENT/chore/remove-sanity-traces/scripts/install-vps.sh | \
+curl -fsSL https://raw.githubusercontent.com/bysinaa/partoEVENT/master/scripts/install-vps.sh | \
   sudo sh -s -- example.com admin@example.com
 ```
 

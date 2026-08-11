@@ -2,7 +2,7 @@
 set -eu
 
 REPOSITORY_URL=${PARTO_REPOSITORY_URL:-https://github.com/bysinaa/partoEVENT.git}
-BRANCH=${PARTO_BRANCH:-chore/remove-sanity-traces}
+BRANCH=${PARTO_BRANCH:-master}
 INSTALL_DIR=${PARTO_INSTALL_DIR:-/opt/parto}
 SITE_DOMAIN=${1:-}
 ACME_EMAIL=${2:-}
